@@ -1,8 +1,6 @@
-
 streamlit
 yfinance
 google-generativeai
 ephem
 pandas
 numpy
-requests
