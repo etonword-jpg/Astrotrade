@@ -522,7 +522,7 @@ function doShuffleAnimation(){{
     }}, i*25);
   }});
   sessionStorage.setItem('astroShuffle',shuffleCount);
-}}
+}
 
 buildFan();
 renderSelected();
