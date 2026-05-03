@@ -395,20 +395,18 @@ function buildFan(){{
   var defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
   var rg=document.createElementNS('http://www.w3.org/2000/svg','radialGradient');
   rg.setAttribute('id','bgG');rg.setAttribute('cx','50%');rg.setAttribute('cy','100%');rg.setAttribute('r','60%');
-  var stops1=[['0%','#3d0070','0.5'],['100%','#080810','0']];
-  stops1.forEach(function(s){{
+  [{{'offset':'0%','color':'#3d0070','opacity':'0.5'}},{{'offset':'100%','color':'#080810','opacity':'0'}}].forEach(function(s){{
     var el=document.createElementNS('http://www.w3.org/2000/svg','stop');
-    el.setAttribute('offset',s[0]);el.setAttribute('stop-color',s[1]);el.setAttribute('stop-opacity',s[2]);
+    el.setAttribute('offset',s.offset);el.setAttribute('stop-color',s.color);el.setAttribute('stop-opacity',s.opacity);
     rg.appendChild(el);
   }});
   defs.appendChild(rg);
 
   var lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
   lg.setAttribute('id','cG');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','1');lg.setAttribute('y2','1');
-  var stops2=[['0%','#2d0a4e'],['100%','#1a0533']];
-  stops2.forEach(function(s){{
+  [{{'offset':'0%','color':'#2d0a4e'}},{{'offset':'100%','color':'#1a0533'}}].forEach(function(s){{
     var el=document.createElementNS('http://www.w3.org/2000/svg','stop');
-    el.setAttribute('offset',s[0]);el.setAttribute('stop-color',s[1]);lg.appendChild(el);
+    el.setAttribute('offset',s.offset);el.setAttribute('stop-color',s.color);lg.appendChild(el);
   }});
   defs.appendChild(lg);
   svg.appendChild(defs);
