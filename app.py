@@ -10,41 +10,42 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="AstroTrade", page_icon="🌟", layout="centered")
 
+# ============================================================
+# API Key
+# ============================================================
 try:
     GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
 except:
     GEMINI_KEY = None
 
+# ============================================================
+# CSS
+# ============================================================
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-    html, body, [class*="css"] { font-family: 'Space Grotesk', sans-serif; background-color: #080810; color: #e8e8f0; }
-    .stApp { background: radial-gradient(ellipse at top left, #1a0533 0%, #080810 50%, #001a33 100%); min-height: 100vh; }
-    .brand-wrap { text-align: center; padding: 20px 0 8px 0; }
-    .brand-title {
-        font-family: 'Playfair Display', serif; font-size: 3.2em; font-weight: 900;
-        background: linear-gradient(135deg, #fff 0%, #e040fb 40%, #7c4dff 70%, #40c4ff 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        letter-spacing: 6px; text-transform: uppercase;
-        filter: drop-shadow(0 0 20px rgba(224,64,251,0.5));
-    }
-    .brand-sub { font-weight: 300; color: #b39ddb; font-size: 0.9em; letter-spacing: 3px; text-transform: uppercase; margin-top: -4px; }
-    .brand-line { width: 80px; height: 2px; background: linear-gradient(90deg, transparent, #e040fb, #7c4dff, transparent); margin: 12px auto; }
-    .glass-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(224,64,251,0.2); border-radius: 16px; padding: 20px; margin: 12px 0; }
-    .signal-buy  { background: rgba(0,230,118,0.08);  border: 1px solid rgba(0,230,118,0.4);  border-radius: 16px; padding: 20px; }
-    .signal-sell { background: rgba(255,23,68,0.08);  border: 1px solid rgba(255,23,68,0.4);  border-radius: 16px; padding: 20px; }
-    .signal-wait { background: rgba(255,160,0,0.08);  border: 1px solid rgba(255,160,0,0.4);  border-radius: 16px; padding: 20px; }
-    .card-revealed { background: linear-gradient(145deg, rgba(124,77,255,0.25), rgba(224,64,251,0.12)); border: 2px solid #e040fb; border-radius: 12px; padding: 14px 8px; text-align: center; box-shadow: 0 0 25px rgba(224,64,251,0.5); }
-    .section-header { font-family: 'Playfair Display', serif; font-size: 1.3em; font-weight: 700; background: linear-gradient(90deg, #e040fb, #7c4dff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; margin: 20px 0 10px 0; }
-    [data-testid="metric-container"] { background: rgba(255,255,255,0.04); border: 1px solid rgba(124,77,255,0.2); border-radius: 12px; padding: 12px; }
-    .stButton > button { background: linear-gradient(135deg, #7c4dff, #e040fb) !important; color: white !important; border: none !important; border-radius: 50px !important; font-weight: 700 !important; letter-spacing: 2px !important; padding: 14px !important; box-shadow: 0 0 25px rgba(224,64,251,0.4) !important; }
-    .stTextInput > div > div > input, .stSelectbox > div > div { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(124,77,255,0.3) !important; border-radius: 12px !important; color: #e8e8f0 !important; }
-    .stRadio > div { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 8px; }
-    [data-testid="stSidebar"] { background: rgba(8,8,16,0.95) !important; border-right: 1px solid rgba(124,77,255,0.2) !important; }
-    hr { border-color: rgba(124,77,255,0.2) !important; }
-    .poll-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(124,77,255,0.25); border-radius: 14px; padding: 14px 18px; margin: 8px 0; }
-    .poll-bar-bg { background: rgba(255,255,255,0.08); border-radius: 20px; height: 8px; margin: 4px 0; }
-    .footer-text { text-align: center; color: #5c5c7a; font-size: 0.78em; letter-spacing: 1px; padding: 10px 0; }
+    html,body,[class*="css"]{font-family:'Space Grotesk',sans-serif;background-color:#080810;color:#e8e8f0;}
+    .stApp{background:radial-gradient(ellipse at top left,#1a0533 0%,#080810 50%,#001a33 100%);min-height:100vh;}
+    .brand-wrap{text-align:center;padding:20px 0 8px 0;}
+    .brand-title{font-family:'Playfair Display',serif;font-size:3.2em;font-weight:900;background:linear-gradient(135deg,#fff 0%,#e040fb 40%,#7c4dff 70%,#40c4ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:6px;text-transform:uppercase;filter:drop-shadow(0 0 20px rgba(224,64,251,0.5));}
+    .brand-sub{font-weight:300;color:#b39ddb;font-size:0.9em;letter-spacing:3px;text-transform:uppercase;margin-top:-4px;}
+    .brand-line{width:80px;height:2px;background:linear-gradient(90deg,transparent,#e040fb,#7c4dff,transparent);margin:12px auto;}
+    .glass-card{background:rgba(255,255,255,0.04);border:1px solid rgba(224,64,251,0.2);border-radius:16px;padding:20px;margin:12px 0;}
+    .signal-buy{background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.4);border-radius:16px;padding:20px;}
+    .signal-sell{background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.4);border-radius:16px;padding:20px;}
+    .signal-wait{background:rgba(255,160,0,0.08);border:1px solid rgba(255,160,0,0.4);border-radius:16px;padding:20px;}
+    .card-revealed{background:linear-gradient(145deg,rgba(124,77,255,0.25),rgba(224,64,251,0.12));border:2px solid #e040fb;border-radius:12px;padding:14px 8px;text-align:center;box-shadow:0 0 25px rgba(224,64,251,0.5);}
+    .section-header{font-family:'Playfair Display',serif;font-size:1.3em;font-weight:700;background:linear-gradient(90deg,#e040fb,#7c4dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px;margin:20px 0 10px 0;}
+    .symbol-badge{display:inline-block;background:linear-gradient(135deg,rgba(124,77,255,0.3),rgba(224,64,251,0.2));border:1px solid #e040fb;border-radius:20px;padding:6px 16px;font-size:1.1em;font-weight:700;color:#e8e8f0;margin-top:8px;letter-spacing:1px;}
+    [data-testid="metric-container"]{background:rgba(255,255,255,0.04);border:1px solid rgba(124,77,255,0.2);border-radius:12px;padding:12px;}
+    .stButton>button{background:linear-gradient(135deg,#7c4dff,#e040fb)!important;color:white!important;border:none!important;border-radius:50px!important;font-weight:700!important;letter-spacing:2px!important;padding:14px!important;box-shadow:0 0 25px rgba(224,64,251,0.4)!important;}
+    .stTextInput>div>div>input,.stSelectbox>div>div{background:rgba(255,255,255,0.05)!important;border:1px solid rgba(124,77,255,0.3)!important;border-radius:12px!important;color:#e8e8f0!important;}
+    .stRadio>div{background:rgba(255,255,255,0.03);border-radius:12px;padding:8px;}
+    [data-testid="stSidebar"]{background:rgba(8,8,16,0.95)!important;border-right:1px solid rgba(124,77,255,0.2)!important;}
+    hr{border-color:rgba(124,77,255,0.2)!important;}
+    .poll-card{background:rgba(255,255,255,0.04);border:1px solid rgba(124,77,255,0.25);border-radius:14px;padding:14px 18px;margin:8px 0;}
+    .poll-bar-bg{background:rgba(255,255,255,0.08);border-radius:20px;height:8px;margin:4px 0;}
+    .footer-text{text-align:center;color:#5c5c7a;font-size:0.78em;letter-spacing:1px;padding:10px 0;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,55 +67,65 @@ with st.sidebar:
         st.success("✅ API Key พร้อมใช้งาน")
     st.divider()
     st.markdown("<div style='color:#b39ddb;font-size:0.85em;letter-spacing:1px'>HOW TO USE</div>", unsafe_allow_html=True)
-    st.markdown("1. เลือกประเภท: หุ้น / Crypto")
-    st.markdown("2. เลือกชื่อจากรายการ")
-    st.markdown("3. กดไพ่ยิปซีที่ใจสั่ง 3 ใบ")
-    st.markdown("4. กด **วิเคราะห์** (วันเกิดไม่บังคับ)")
+    st.markdown("1. เลือกหุ้นจาก dropdown หรือพิมพ์ชื่อ")
+    st.markdown("2. กดไพ่ยิปซีที่ใจสั่ง 3 ใบ")
+    st.markdown("3. กด **วิเคราะห์** ได้เลย!")
     st.divider()
     st.caption("✦ AstroTrade 2025 | ไม่ใช่คำแนะนำทางการเงิน")
 
-CRYPTO_LIST = {
-    "Bitcoin (BTC)": "BTC-USD", "Ethereum (ETH)": "ETH-USD",
-    "Solana (SOL)": "SOL-USD", "XRP": "XRP-USD", "BNB": "BNB-USD",
-    "Dogecoin (DOGE)": "DOGE-USD", "Cardano (ADA)": "ADA-USD",
-    "Avalanche (AVAX)": "AVAX-USD", "Chainlink (LINK)": "LINK-USD",
-    "Polkadot (DOT)": "DOT-USD", "Shiba Inu (SHIB)": "SHIB-USD",
-    "Pepe (PEPE)": "PEPE-USD", "Sui (SUI)": "SUI-USD",
-    "🔍 พิมพ์เอง": "CUSTOM",
+# ============================================================
+# รายการหุ้น/Crypto แยกกลุ่ม
+# ============================================================
+STOCK_OPTIONS = {
+    "🇺🇸 หุ้นสหรัฐ": {
+        "NVIDIA (NVDA)":"NVDA","Apple (AAPL)":"AAPL","Tesla (TSLA)":"TSLA",
+        "Microsoft (MSFT)":"MSFT","Meta (META)":"META","Amazon (AMZN)":"AMZN",
+        "Google (GOOGL)":"GOOGL","AMD":"AMD","Netflix (NFLX)":"NFLX","Palantir (PLTR)":"PLTR",
+    },
+    "🇹🇭 หุ้นไทย": {
+        "CPALL":"CPALL.BK","PTT":"PTT.BK","SCB":"SCB.BK","KBANK":"KBANK.BK",
+        "AOT":"AOT.BK","MINT":"MINT.BK","ADVANC":"ADVANC.BK","TRUE":"TRUE.BK",
+    },
+    "🪙 Crypto": {
+        "Bitcoin (BTC)":"BTC-USD","Ethereum (ETH)":"ETH-USD","Solana (SOL)":"SOL-USD",
+        "XRP":"XRP-USD","BNB":"BNB-USD","Dogecoin (DOGE)":"DOGE-USD",
+        "Cardano (ADA)":"ADA-USD","Avalanche (AVAX)":"AVAX-USD",
+        "Shiba Inu (SHIB)":"SHIB-USD","Pepe (PEPE)":"PEPE-USD","Sui (SUI)":"SUI-USD",
+    },
 }
-STOCK_LIST = {
-    "NVIDIA (NVDA)": "NVDA", "Apple (AAPL)": "AAPL", "Tesla (TSLA)": "TSLA",
-    "Microsoft (MSFT)": "MSFT", "Meta (META)": "META", "Amazon (AMZN)": "AMZN",
-    "Google (GOOGL)": "GOOGL", "AMD": "AMD",
-    "CPALL (ไทย)": "CPALL.BK", "PTT (ไทย)": "PTT.BK",
-    "SCB (ไทย)": "SCB.BK", "KBANK (ไทย)": "KBANK.BK",
-    "AOT (ไทย)": "AOT.BK", "MINT (ไทย)": "MINT.BK",
-    "🔍 พิมพ์เอง": "CUSTOM",
-}
+
+# flatten สำหรับ dropdown
+ALL_DISPLAY = {"-- เลือกจากรายการ --": ""}
+for group, items in STOCK_OPTIONS.items():
+    for display, ticker in items.items():
+        ALL_DISPLAY[f"{group}  •  {display}"] = ticker
 
 TAROT_CARDS = [
-    {"name": "The Fool",           "th": "คนโง่เขลา",    "emoji": "🃏", "meaning": "จุดเริ่มต้นใหม่ โอกาสที่ไม่คาดคิด"},
-    {"name": "The Magician",       "th": "นักมายากล",     "emoji": "🎩", "meaning": "มีทักษะและพลัง พร้อมลงมือทำ"},
-    {"name": "The High Priestess", "th": "นักบวชหญิง",    "emoji": "🌙", "meaning": "ใช้สัญชาตญาณ รอเวลาที่เหมาะสม"},
-    {"name": "The Empress",        "th": "จักรพรรดินี",   "emoji": "👑", "meaning": "ความอุดมสมบูรณ์ ผลตอบแทนดี"},
-    {"name": "The Emperor",        "th": "จักรพรรดิ",     "emoji": "⚔️", "meaning": "ความมั่นคง โครงสร้างแข็งแกร่ง"},
-    {"name": "The Lovers",         "th": "คู่รัก",        "emoji": "💕", "meaning": "ต้องตัดสินใจเลือก จุดเปลี่ยนสำคัญ"},
-    {"name": "The Chariot",        "th": "รถศึก",         "emoji": "🏆", "meaning": "ชัยชนะ ก้าวหน้าอย่างแข็งแกร่ง"},
-    {"name": "Strength",           "th": "ความแข็งแกร่ง", "emoji": "🦁", "meaning": "ใจเย็น ควบคุมสถานการณ์ได้"},
-    {"name": "The Hermit",         "th": "ฤๅษี",          "emoji": "🏮", "meaning": "ใคร่ครวญก่อน อย่าเร่งรีบ"},
-    {"name": "Wheel of Fortune",   "th": "วงล้อโชคชะตา", "emoji": "🎡", "meaning": "โชคกำลังเปลี่ยน จังหวะกำลังมา"},
-    {"name": "Justice",            "th": "ความยุติธรรม",  "emoji": "⚖️", "meaning": "ผลลัพธ์สมเหตุสมผล ตลาดสมดุล"},
-    {"name": "The Star",           "th": "ดวงดาว",        "emoji": "⭐", "meaning": "ความหวัง สัญญาณบวกกำลังมา"},
-    {"name": "The Moon",           "th": "ดวงจันทร์",     "emoji": "🌕", "meaning": "ความไม่แน่นอน ระวังข้อมูลลวง"},
-    {"name": "The Sun",            "th": "ดวงอาทิตย์",    "emoji": "☀️", "meaning": "ความสำเร็จ ผลตอบแทนสดใส"},
-    {"name": "Judgement",          "th": "การตัดสิน",     "emoji": "🎺", "meaning": "ถึงเวลาตัดสินใจครั้งสำคัญ"},
-    {"name": "The World",          "th": "โลก",           "emoji": "🌍", "meaning": "สำเร็จครบถ้วน จบรอบสมบูรณ์"},
-    {"name": "The Tower",          "th": "หอคอย",         "emoji": "⚡", "meaning": "เปลี่ยนแปลงฉับพลัน ระวังความเสี่ยง"},
-    {"name": "The Devil",          "th": "ปีศาจ",         "emoji": "😈", "meaning": "ระวังความโลภ อย่าตกใจขายหมู"},
-    {"name": "Death",              "th": "ความตาย",       "emoji": "💀", "meaning": "เปลี่ยนแปลงครั้งใหญ่ ยุคใหม่มา"},
-    {"name": "Temperance",         "th": "ความพอดี",      "emoji": "🏺", "meaning": "สมดุล อย่า FOMO อย่า Panic"},
+    {"name":"The Fool","th":"คนโง่เขลา","emoji":"🃏","meaning":"จุดเริ่มต้นใหม่ โอกาสที่ไม่คาดคิด"},
+    {"name":"The Magician","th":"นักมายากล","emoji":"🎩","meaning":"มีทักษะและพลัง พร้อมลงมือทำ"},
+    {"name":"The High Priestess","th":"นักบวชหญิง","emoji":"🌙","meaning":"ใช้สัญชาตญาณ รอเวลาที่เหมาะสม"},
+    {"name":"The Empress","th":"จักรพรรดินี","emoji":"👑","meaning":"ความอุดมสมบูรณ์ ผลตอบแทนดี"},
+    {"name":"The Emperor","th":"จักรพรรดิ","emoji":"⚔️","meaning":"ความมั่นคง โครงสร้างแข็งแกร่ง"},
+    {"name":"The Lovers","th":"คู่รัก","emoji":"💕","meaning":"ต้องตัดสินใจเลือก จุดเปลี่ยนสำคัญ"},
+    {"name":"The Chariot","th":"รถศึก","emoji":"🏆","meaning":"ชัยชนะ ก้าวหน้าอย่างแข็งแกร่ง"},
+    {"name":"Strength","th":"ความแข็งแกร่ง","emoji":"🦁","meaning":"ใจเย็น ควบคุมสถานการณ์ได้"},
+    {"name":"The Hermit","th":"ฤๅษี","emoji":"🏮","meaning":"ใคร่ครวญก่อน อย่าเร่งรีบ"},
+    {"name":"Wheel of Fortune","th":"วงล้อโชคชะตา","emoji":"🎡","meaning":"โชคกำลังเปลี่ยน จังหวะกำลังมา"},
+    {"name":"Justice","th":"ความยุติธรรม","emoji":"⚖️","meaning":"ผลลัพธ์สมเหตุสมผล ตลาดสมดุล"},
+    {"name":"The Star","th":"ดวงดาว","emoji":"⭐","meaning":"ความหวัง สัญญาณบวกกำลังมา"},
+    {"name":"The Moon","th":"ดวงจันทร์","emoji":"🌕","meaning":"ความไม่แน่นอน ระวังข้อมูลลวง"},
+    {"name":"The Sun","th":"ดวงอาทิตย์","emoji":"☀️","meaning":"ความสำเร็จ ผลตอบแทนสดใส"},
+    {"name":"Judgement","th":"การตัดสิน","emoji":"🎺","meaning":"ถึงเวลาตัดสินใจครั้งสำคัญ"},
+    {"name":"The World","th":"โลก","emoji":"🌍","meaning":"สำเร็จครบถ้วน จบรอบสมบูรณ์"},
+    {"name":"The Tower","th":"หอคอย","emoji":"⚡","meaning":"เปลี่ยนแปลงฉับพลัน ระวังความเสี่ยง"},
+    {"name":"The Devil","th":"ปีศาจ","emoji":"😈","meaning":"ระวังความโลภ อย่าตกใจขายหมู"},
+    {"name":"Death","th":"ความตาย","emoji":"💀","meaning":"เปลี่ยนแปลงครั้งใหญ่ ยุคใหม่มา"},
+    {"name":"Temperance","th":"ความพอดี","emoji":"🏺","meaning":"สมดุล อย่า FOMO อย่า Panic"},
 ]
 
+# ============================================================
+# ฟังก์ชันหุ้น
+# ============================================================
 def calc_rsi(series, period=14):
     delta=series.diff(); gain=delta.clip(lower=0).rolling(period).mean(); loss=-delta.clip(upper=0).rolling(period).mean()
     return 100-(100/(1+gain/loss))
@@ -130,7 +141,7 @@ def get_sr_levels(df):
     price=df["Close"].iloc[-1]; h=df["High"].tail(20).max(); l=df["Low"].tail(20).min(); p=(h+l+price)/3
     r1=round(2*p-l,2);r2=round(p+(h-l),2);r3=round(h+2*(p-l),2)
     s1=round(2*p-h,2);s2=round(p-(h-l),2);s3=round(l-2*(h-p),2)
-    return sorted([r for r in [r1,r2,r3] if r>price])[:3],sorted([s for s in [s1,s2,s3] if s<price],reverse=True)[:3]
+    return sorted([r for r in [r1,r2,r3] if r>price])[:3], sorted([s for s in [s1,s2,s3] if s<price],reverse=True)[:3]
 
 def get_elliott(df):
     close=df["Close"].tail(50); recent=close.tail(10)
@@ -153,7 +164,7 @@ def get_elliott(df):
     else: wp,we="ไม่พอข้อมูล","❓"
     return {"trend_long":tl,"trend_short":ts,"wave_pos":wp,"wave_emoji":we}
 
-def get_stock_data(symbol,is_crypto=False):
+def get_stock_data(symbol, is_crypto=False):
     try:
         df=yf.Ticker(symbol).history(period="3mo")
         if df.empty: return None
@@ -163,6 +174,7 @@ def get_stock_data(symbol,is_crypto=False):
         ma20=df["MA20"].iloc[-1]; ma50=df["MA50"].iloc[-1]; atr=df["ATR"].iloc[-1]
         bbu=df["BB_upper"].iloc[-1]; bbl=df["BB_lower"].iloc[-1]; chg=((price-prev)/prev)*100
         res,sup=get_sr_levels(df); ew=get_elliott(df)
+        is_c=is_crypto or symbol.endswith("-USD")
         if rsi<=40 and price<=bbl:
             sig,sen,desc,cls="🟢 ซื้อ","BUY","ราคาต่ำเกินจริง — จังหวะสะสมที่ดี","signal-buy"
             e=round(price,2);sl=round(price-atr*1.5,2);tp1=round(price+atr,2);tp2=round(price+atr*2,2);tp3=round(price+atr*3,2);tp4=round(price+atr*4.5,2)
@@ -172,13 +184,13 @@ def get_stock_data(symbol,is_crypto=False):
         else:
             sig,sen,desc,cls="🟡 รอดูก่อน","WAIT","ยังไม่ถึงจังหวะที่ดี — รอราคาลงมาก่อน","signal-wait"
             e=round(bbl,2);sl=round(bbl-atr*1.5,2);tp1=round(bbl+atr,2);tp2=round(bbl+atr*2,2);tp3=round(bbl+atr*3,2);tp4=round(bbu,2)
-        d=6 if is_crypto and price<0.01 else(4 if is_crypto and price<1 else 2)
+        d=6 if is_c and price<0.01 else(4 if is_c and price<1 else 2)
         return {"symbol":symbol,"price":round(price,d),"change_pct":round(chg,2),"arrow":"▲" if chg>=0 else "▼",
                 "rsi":round(rsi,2),"rsi_signal":"สูงเกินไป" if rsi>=70 else("ต่ำเกินไป" if rsi<=30 else "ปกติ"),
                 "ma20":round(ma20,d),"ma50":round(ma50,d),"ma_signal":"แนวโน้มขาขึ้น ☀️" if ma20>ma50 else "แนวโน้มขาลง 📉",
                 "signal":sig,"signal_en":sen,"desc":desc,"cls":cls,"entry":e,"sl":sl,
                 "tp1":round(tp1,d),"tp2":round(tp2,d),"tp3":round(tp3,d),"tp4":round(tp4,d),
-                "resistances":res,"supports":sup,"elliott":ew,"is_crypto":is_crypto,"close_series":df["Close"]}
+                "resistances":res,"supports":sup,"elliott":ew,"is_crypto":is_c,"close_series":df["Close"]}
     except Exception as ex:
         st.error(f"❌ {ex}"); return None
 
@@ -261,240 +273,281 @@ if hot:
 st.divider()
 
 # ============================================================
-# เลือกหุ้น
+# เลือกหุ้น — 2 ช่องใช้ร่วมกัน
 # ============================================================
-st.markdown("<div class='section-header'>🔮 วิเคราะห์หุ้น</div>", unsafe_allow_html=True)
-asset_type=st.radio("เลือกประเภทสินทรัพย์",["📈 หุ้น (Stock)","🪙 Crypto"],horizontal=True)
-is_crypto=asset_type=="🪙 Crypto"
-if is_crypto:
-    c1,c2=st.columns(2)
-    with c1: sel=st.selectbox("🪙 เลือก Crypto",list(CRYPTO_LIST.keys()))
-    with c2: manual=st.text_input("พิมพ์ชื่อ",placeholder="เช่น SOL-USD") if CRYPTO_LIST[sel]=="CUSTOM" else ""
-    symbol=manual.upper().strip() if CRYPTO_LIST[sel]=="CUSTOM" else CRYPTO_LIST[sel]
+st.markdown("<div class='section-header'>🔮 เลือกสินทรัพย์ที่ต้องการวิเคราะห์</div>", unsafe_allow_html=True)
+
+if "symbol_input" not in st.session_state:
+    st.session_state.symbol_input = ""
+
+col_drop, col_type = st.columns(2)
+
+with col_drop:
+    st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:4px'>📋 เลือกจากรายการ</div>", unsafe_allow_html=True)
+    dropdown_sel = st.selectbox(
+        "เลือกหุ้น/Crypto",
+        list(ALL_DISPLAY.keys()),
+        label_visibility="collapsed"
+    )
+    if ALL_DISPLAY[dropdown_sel]:
+        st.session_state.symbol_input = ALL_DISPLAY[dropdown_sel]
+
+with col_type:
+    st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:4px'>✏️ พิมพ์ชื่อเอง</div>", unsafe_allow_html=True)
+    typed = st.text_input(
+        "พิมพ์ชื่อหุ้น",
+        placeholder="เช่น NVDA, BTC-USD, SCB.BK",
+        label_visibility="collapsed",
+        key="typed_symbol"
+    )
+    if typed.strip():
+        st.session_state.symbol_input = typed.strip().upper()
+
+# แสดง badge ชื่อที่เลือก
+symbol = st.session_state.symbol_input
+if symbol:
+    st.markdown(f"""
+    <div style='margin:8px 0 4px 0;color:#888;font-size:0.82em'>สินทรัพย์ที่เลือก:</div>
+    <div class='symbol-badge'>{'🪙' if symbol.endswith('-USD') else '📈'} {symbol}</div>
+    """, unsafe_allow_html=True)
 else:
-    c1,c2=st.columns(2)
-    with c1: sel=st.selectbox("📈 เลือกหุ้น",list(STOCK_LIST.keys()))
-    with c2: manual=st.text_input("พิมพ์ชื่อ",placeholder="เช่น NVDA") if STOCK_LIST[sel]=="CUSTOM" else ""
-    symbol=manual.upper().strip() if STOCK_LIST[sel]=="CUSTOM" else STOCK_LIST[sel]
+    st.markdown("<div style='color:#555;font-size:0.85em;margin-top:8px'>⬆️ เลือกหรือพิมพ์ชื่อสินทรัพย์ด้านบน</div>", unsafe_allow_html=True)
 
-birth=st.text_input("🎂 วันเกิด (ไม่บังคับ)",placeholder="DD/MM/YYYY เช่น 15/06/1990")
+birth = st.text_input("🎂 วันเกิด (ไม่บังคับ)", placeholder="DD/MM/YYYY เช่น 15/06/1990")
 
 # ============================================================
-# สำรับไพ่ยิปซี Arc — แก้ให้พอดีจอทั้งแนวตั้งและแนวนอน
+# สำรับไพ่ยิปซี Arc + Shuffle Animation
 # ============================================================
 st.markdown("<div class='section-header'>🃏 เลือกไพ่ยิปซีจากสำรับ</div>", unsafe_allow_html=True)
 st.markdown("<div style='color:#b39ddb;font-size:0.88em;margin-bottom:8px'>ทำจิตใจให้สงบ แล้วกดไพ่ที่ใจสั่ง 3 ใบ 🌙</div>", unsafe_allow_html=True)
 
 if "shuffled_deck" not in st.session_state:
     deck=TAROT_CARDS.copy(); random.shuffle(deck); st.session_state.shuffled_deck=deck
+if "shuffle_count" not in st.session_state:
+    st.session_state.shuffle_count=0
+if "tarot_selected" not in st.session_state:
+    st.session_state.tarot_selected=[]
 
-if st.button("🔀 สับไพ่ใหม่"):
-    deck=TAROT_CARDS.copy(); random.shuffle(deck); st.session_state.shuffled_deck=deck; st.rerun()
+col_sh,_=st.columns([1,3])
+with col_sh:
+    if st.button("🔀 สับไพ่ใหม่"):
+        deck=TAROT_CARDS.copy(); random.shuffle(deck)
+        st.session_state.shuffled_deck=deck
+        st.session_state.tarot_selected=[]
+        st.session_state.shuffle_count+=1
+        st.rerun()
 
-cards_json = json.dumps([{"name":c["name"],"th":c["th"],"emoji":c["emoji"],"meaning":c["meaning"]} for c in st.session_state.shuffled_deck])
+cards_json=json.dumps([{"name":c["name"],"th":c["th"],"emoji":c["emoji"],"meaning":c["meaning"]} for c in st.session_state.shuffled_deck])
+shuffle_count=st.session_state.shuffle_count
 
-fan_html = f"""
+fan_html=f"""
 <style>
-#tarot-root {{
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0;
-  overflow: hidden;
+#fan-root{{width:100%;box-sizing:border-box;overflow:hidden;}}
+#fan-svg-wrap{{width:100%;aspect-ratio:2/1;position:relative;overflow:hidden;}}
+#fan-svg-wrap svg{{width:100%;height:100%;}}
+
+@keyframes flyOut{{
+  0%  {{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}}
+  30% {{opacity:0.8;transform:translate(var(--dx),var(--dy)) rotate(var(--dr)) scale(1.2);}}
+  60% {{opacity:0.5;transform:translate(calc(var(--dx)*0.5),calc(var(--dy)*0.5)) rotate(calc(var(--dr)*-0.5)) scale(1.1);}}
+  100%{{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}}
 }}
-#fan-svg-wrap {{
-  width: 100%;
-  /* aspect-ratio จะควบคุมความสูงให้พอดี */
-  aspect-ratio: 2 / 1;
-  position: relative;
-  overflow: hidden;
+.card-g.shuffling{{
+  animation:flyOut 0.7s ease-in-out forwards;
 }}
-#fan-svg-wrap svg {{
-  width: 100%;
-  height: 100%;
-}}
-.t-card {{
-  cursor: pointer;
-  transition: filter 0.15s;
-}}
-.t-card:hover .card-body {{
-  filter: drop-shadow(0 0 8px #e040fb);
-}}
-.t-card.picked {{
-  opacity: 0.3;
-  pointer-events: none;
-}}
-#selected-area {{
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  min-height: 120px;
-  margin-top: 12px;
-  align-items: flex-start;
-}}
-.sel-card {{
-  background: linear-gradient(145deg, rgba(124,77,255,0.3), rgba(224,64,251,0.15));
-  border: 2px solid #e040fb;
-  border-radius: 12px;
-  padding: 10px 8px;
-  text-align: center;
-  width: 95px;
-  box-shadow: 0 0 16px rgba(224,64,251,0.4);
-  color: #eee;
-  position: relative;
-}}
-.sel-card .role {{ color:#ce93d8; font-size:0.62em; letter-spacing:1px; text-transform:uppercase; }}
-.sel-card .cemoji {{ font-size:1.6em; margin:4px 0; }}
-.sel-card .cname {{ font-size:0.72em; font-weight:700; color:#fff; }}
-.sel-card .cmeaning {{ font-size:0.62em; color:#999; line-height:1.3; margin-top:3px; }}
-.sel-card .rm {{ position:absolute;top:3px;right:6px;background:none;border:none;color:#777;cursor:pointer;font-size:0.75em; }}
-#count-label {{ text-align:center; color:#e040fb; font-size:0.88em; margin-top:6px; }}
-#clear-btn {{ display:block; margin:8px auto 0; background:rgba(124,77,255,0.2); border:1px solid #7c4dff; color:#e040fb; border-radius:20px; padding:5px 18px; cursor:pointer; font-size:0.82em; }}
+
+#sel-area{{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:130px;margin-top:14px;align-items:flex-start;}}
+.sel-card{{background:linear-gradient(145deg,rgba(124,77,255,0.3),rgba(224,64,251,0.15));border:2px solid #e040fb;border-radius:12px;padding:10px 8px;text-align:center;width:90px;box-shadow:0 0 16px rgba(224,64,251,0.4);color:#eee;position:relative;}}
+.sel-card .role{{color:#ce93d8;font-size:0.6em;letter-spacing:1px;text-transform:uppercase;}}
+.sel-card .cemoji{{font-size:1.5em;margin:3px 0;}}
+.sel-card .cname{{font-size:0.7em;font-weight:700;color:#fff;}}
+.sel-card .cmeaning{{font-size:0.6em;color:#999;line-height:1.3;margin-top:3px;}}
+.sel-card .rm{{position:absolute;top:3px;right:6px;background:none;border:none;color:#888;cursor:pointer;font-size:0.75em;}}
+#count-lbl{{text-align:center;color:#e040fb;font-size:0.88em;margin-top:6px;min-height:20px;}}
+#clr-btn{{display:block;margin:8px auto 0;background:rgba(124,77,255,0.2);border:1px solid #7c4dff;color:#e040fb;border-radius:20px;padding:5px 18px;cursor:pointer;font-size:0.82em;}}
 </style>
 
-<div id="tarot-root">
+<div id="fan-root">
   <div id="fan-svg-wrap">
-    <svg id="fan-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax meet">
-    </svg>
+    <svg id="fan-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax meet"></svg>
   </div>
-  <div id="selected-area"><span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span></div>
-  <div id="count-label"></div>
-  <button id="clear-btn" onclick="clearAll()">✕ ล้างไพ่</button>
+  <div id="sel-area"><span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span></div>
+  <div id="count-lbl"></div>
+  <button id="clr-btn" onclick="clearAll()">✕ ล้างไพ่</button>
 </div>
 
 <script>
-var cards = {cards_json};
-var selected = []; // array of card indices
-var roles = ["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"];
-var total = cards.length; // 20
+var cards={cards_json};
+var selected=[];
+var roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"];
+var shuffleCount={shuffle_count};
+var lastShuffle=parseInt(sessionStorage.getItem('astroShuffle')||'-1');
+var needShuffle=(shuffleCount!==lastShuffle);
 
-function buildFan() {{
-  var svg = document.getElementById('fan-svg');
-  svg.innerHTML = '';
+function buildFan(){{
+  var svg=document.getElementById('fan-svg');
+  svg.innerHTML='';
+  var total=cards.length;
+  var cx=200,cy=215,R=175;
+  var startDeg=-170,span=160;
 
-  // วาด glow พื้นหลัง arc
-  var defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-  var rg = document.createElementNS('http://www.w3.org/2000/svg','radialGradient');
-  rg.setAttribute('id','bgGlow'); rg.setAttribute('cx','50%'); rg.setAttribute('cy','100%'); rg.setAttribute('r','60%');
-  var s1=document.createElementNS('http://www.w3.org/2000/svg','stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#3d0070'); s1.setAttribute('stop-opacity','0.4');
-  var s2=document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#080810'); s2.setAttribute('stop-opacity','0');
-  rg.appendChild(s1); rg.appendChild(s2); defs.appendChild(rg); svg.appendChild(defs);
-  var bgr=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-  bgr.setAttribute('cx','200'); bgr.setAttribute('cy','200'); bgr.setAttribute('rx','220'); bgr.setAttribute('ry','160'); bgr.setAttribute('fill','url(#bgGlow)');
-  svg.appendChild(bgr);
+  // defs
+  var defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  var rg=document.createElementNS('http://www.w3.org/2000/svg','radialGradient');
+  rg.setAttribute('id','bgG');rg.setAttribute('cx','50%');rg.setAttribute('cy','100%');rg.setAttribute('r','60%');
+  [{{'offset':'0%','color':'#3d0070','opacity':'0.5'}},{{'offset':'100%','color':'#080810','opacity':'0'}}].forEach(function(s){{
+    var el=document.createElementNS('http://www.w3.org/2000/svg','stop');
+    el.setAttribute('offset',s.offset);el.setAttribute('stop-color',s.color);el.setAttribute('stop-opacity',s.opacity);
+    rg.appendChild(el);
+  }});
+  defs.appendChild(rg);
 
-  // พารามิเตอร์ arc
-  var cx = 200, cy = 210; // จุดศูนย์กลาง (ล่างกลาง)
-  var R = 170;             // รัศมี
-  var startDeg = -170;     // องศาเริ่ม
-  var endDeg   = -10;      // องศาสิ้นสุด
-  var span     = endDeg - startDeg;
-  var cw = 20, ch = 32;   // ขนาดไพ่ใน SVG
+  var lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+  lg.setAttribute('id','cG');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','1');lg.setAttribute('y2','1');
+  [{{'offset':'0%','color':'#2d0a4e'}},{{'offset':'100%','color':'#1a0533'}}].forEach(function(s){{
+    var el=document.createElementNS('http://www.w3.org/2000/svg','stop');
+    el.setAttribute('offset',s.offset);el.setAttribute('stop-color',s.color);lg.appendChild(el);
+  }});
+  defs.appendChild(lg);
+  svg.appendChild(defs);
 
-  for (var i=0; i<total; i++) {{
-    var frac = i / (total-1);
-    var angleDeg = startDeg + frac * span;
-    var angleRad = angleDeg * Math.PI / 180;
-    var cx2 = cx + R * Math.cos(angleRad);
-    var cy2 = cy + R * Math.sin(angleRad);
-    var rotateDeg = angleDeg + 90; // หมุนตามทิศทาง arc
+  var bg=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+  bg.setAttribute('cx','200');bg.setAttribute('cy','210');bg.setAttribute('rx','220');bg.setAttribute('ry','180');bg.setAttribute('fill','url(#bgG)');
+  svg.appendChild(bg);
 
-    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','t-card' + (selected.indexOf(i)>=0?' picked':''));
-    g.setAttribute('transform','translate('+cx2+','+cy2+') rotate('+rotateDeg+')');
-    g.dataset.idx = i;
+  var cw=20,ch=32;
+  for(var i=0;i<total;i++){{
+    var frac=i/(total-1);
+    var angleDeg=startDeg+frac*span;
+    var rad=angleDeg*Math.PI/180;
+    var px=cx+R*Math.cos(rad);
+    var py=cy+R*Math.sin(rad);
+    var rot=angleDeg+90;
+    var isPicked=selected.indexOf(i)>=0;
 
-    // ตัวไพ่ (rectangle)
-    var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x',-cw/2); rect.setAttribute('y',-ch/2);
-    rect.setAttribute('width',cw); rect.setAttribute('height',ch);
-    rect.setAttribute('rx','3'); rect.setAttribute('ry','3');
-    rect.setAttribute('class','card-body');
-    rect.setAttribute('fill', selected.indexOf(i)>=0 ? '#1a003a' : 'url(#cardGrad'+i+')');
-    rect.setAttribute('stroke','#e040fb'); rect.setAttribute('stroke-width','0.8');
+    var g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','card-g');
+    g.setAttribute('transform','translate('+px+','+py+') rotate('+rot+')');
+    g.style.cursor=isPicked?'default':'pointer';
+    g.style.opacity=isPicked?'0.2':'1';
+    g.dataset.idx=i;
+    g.dataset.px=px;
+    g.dataset.py=py;
 
-    // gradient ไพ่
-    var lg = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
-    lg.setAttribute('id','cardGrad'+i); lg.setAttribute('x1','0'); lg.setAttribute('y1','0'); lg.setAttribute('x2','1'); lg.setAttribute('y2','1');
-    var ls1=document.createElementNS('http://www.w3.org/2000/svg','stop'); ls1.setAttribute('offset','0%'); ls1.setAttribute('stop-color','#2d0a4e');
-    var ls2=document.createElementNS('http://www.w3.org/2000/svg','stop'); ls2.setAttribute('offset','100%'); ls2.setAttribute('stop-color','#1a0533');
-    lg.appendChild(ls1); lg.appendChild(ls2);
-    if (!document.getElementById('cardGrad'+i)) {{
-      var defs2 = svg.querySelector('defs') || document.createElementNS('http://www.w3.org/2000/svg','defs');
-      defs2.appendChild(lg);
-      if (!svg.querySelector('defs')) svg.insertBefore(defs2, svg.firstChild);
+    var rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',-cw/2);rect.setAttribute('y',-ch/2);
+    rect.setAttribute('width',cw);rect.setAttribute('height',ch);
+    rect.setAttribute('rx','3');rect.setAttribute('ry','3');
+    rect.setAttribute('fill',isPicked?'#0d0020':'url(#cG)');
+    rect.setAttribute('stroke',isPicked?'rgba(100,30,150,0.3)':'#e040fb');
+    rect.setAttribute('stroke-width','0.8');
+
+    var star=document.createElementNS('http://www.w3.org/2000/svg','text');
+    star.setAttribute('x','0');star.setAttribute('y','5');
+    star.setAttribute('text-anchor','middle');star.setAttribute('font-size','11');
+    star.setAttribute('fill',isPicked?'rgba(100,30,150,0.3)':'#e040fb');
+    star.textContent='✦';
+
+    var title=document.createElementNS('http://www.w3.org/2000/svg','title');
+    title.textContent=isPicked?'เลือกแล้ว':cards[i].th;
+
+    g.appendChild(title);g.appendChild(rect);g.appendChild(star);
+
+    if(!isPicked){{
+      g.addEventListener('mouseenter',function(){{
+        this.querySelector('rect').setAttribute('stroke','#fff');
+        this.querySelector('rect').setAttribute('stroke-width','1.5');
+        this.querySelector('text').setAttribute('fill','#fff');
+      }});
+      g.addEventListener('mouseleave',function(){{
+        this.querySelector('rect').setAttribute('stroke','#e040fb');
+        this.querySelector('rect').setAttribute('stroke-width','0.8');
+        this.querySelector('text').setAttribute('fill','#e040fb');
+      }});
+      g.addEventListener('click',onCardClick);
     }}
-
-    // ดาวกลางไพ่
-    var star = document.createElementNS('http://www.w3.org/2000/svg','text');
-    star.setAttribute('x','0'); star.setAttribute('y','4');
-    star.setAttribute('text-anchor','middle'); star.setAttribute('font-size','10');
-    star.textContent = '✦';
-    star.setAttribute('fill','#e040fb');
-
-    g.appendChild(rect); g.appendChild(star);
-    g.addEventListener('click', onCardClick);
     svg.appendChild(g);
   }}
 }}
 
-function onCardClick(e) {{
-  var g = this;
-  var idx = parseInt(g.dataset.idx);
-  if (selected.indexOf(idx)>=0) return;
-  if (selected.length>=3) return;
+function onCardClick(){{
+  var idx=parseInt(this.dataset.idx);
+  if(selected.indexOf(idx)>=0||selected.length>=3) return;
+  // flash
+  var self=this;
+  self.style.filter='drop-shadow(0 0 10px #fff)';
+  setTimeout(function(){{self.style.filter='';},350);
   selected.push(idx);
-  buildFan();
-  renderSelected();
+  buildFan();renderSelected();
 }}
 
-function renderSelected() {{
-  var area = document.getElementById('selected-area');
-  var label = document.getElementById('count-label');
-  if (selected.length===0) {{
-    area.innerHTML = '<span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span>';
-    label.textContent = '';
-    return;
+function renderSelected(){{
+  var area=document.getElementById('sel-area');
+  var lbl=document.getElementById('count-lbl');
+  if(selected.length===0){{
+    area.innerHTML='<span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span>';
+    lbl.textContent='';return;
   }}
-  area.innerHTML = '';
-  for (var i=0; i<selected.length; i++) {{
-    var c = cards[selected[i]];
-    var div = document.createElement('div');
-    div.className = 'sel-card';
-    div.innerHTML = '<div class="role">'+roles[i]+'</div>'
-      +'<div class="cemoji">'+c.emoji+'</div>'
-      +'<div class="cname">'+c.th+'</div>'
-      +'<div class="cmeaning">'+c.meaning+'</div>'
-      +'<button class="rm" onclick="removeCard('+i+')">✕</button>';
+  area.innerHTML='';
+  for(var i=0;i<selected.length;i++){{
+    var c=cards[selected[i]];
+    var div=document.createElement('div');div.className='sel-card';
+    div.innerHTML='<div class="role">'+roles[i]+'</div><div class="cemoji">'+c.emoji+'</div><div class="cname">'+c.th+'</div><div class="cmeaning">'+c.meaning+'</div><button class="rm" onclick="removeCard('+i+')">✕</button>';
     area.appendChild(div);
   }}
-  label.textContent = '✨ เลือกแล้ว '+selected.length+'/3 ใบ';
+  lbl.textContent='✨ เลือกแล้ว '+selected.length+'/3 ใบ'+(selected.length===3?' — พร้อมวิเคราะห์! 🚀':'');
 }}
 
-function removeCard(si) {{
-  selected.splice(si,1);
-  buildFan(); renderSelected();
-}}
+function removeCard(si){{selected.splice(si,1);buildFan();renderSelected();}}
+function clearAll(){{selected=[];buildFan();renderSelected();}}
 
-function clearAll() {{
-  selected=[]; buildFan(); renderSelected();
+// Shuffle animation — ไพ่บินกระจายแล้วกลับมาเรียง
+function doShuffleAnimation(){{
+  var svg=document.getElementById('fan-svg');
+  var groups=svg.querySelectorAll('.card-g');
+  var cx=200,cy=200;
+  groups.forEach(function(g,i){{
+    var px=parseFloat(g.dataset.px||200);
+    var py=parseFloat(g.dataset.py||200);
+    // ทิศทางบินออกจากจุดศูนย์กลาง
+    var dx=(px-cx)*0.8 + (Math.random()-0.5)*60;
+    var dy=(py-cy)*0.8 + (Math.random()-0.5)*60;
+    var dr=(Math.random()-0.5)*60;
+    g.style.setProperty('--dx', dx+'px');
+    g.style.setProperty('--dy', dy+'px');
+    g.style.setProperty('--dr', dr+'deg');
+    setTimeout(function(){{
+      g.classList.add('shuffling');
+      setTimeout(function(){{g.classList.remove('shuffling');},750);
+    }}, i*25);
+  }});
+  sessionStorage.setItem('astroShuffle',shuffleCount);
 }}
 
 buildFan();
 renderSelected();
+
+// ถ้าเพิ่ง shuffle ให้เล่น animation
+if(needShuffle){{
+  setTimeout(doShuffleAnimation, 150);
+}}
 </script>
 """
 
-st.components.v1.html(fan_html, height=520, scrolling=False)
+st.components.v1.html(fan_html, height=530, scrolling=False)
 
-st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:6px'>หรือเลือกจากรายการ (เลือก 3 ใบ)</div>", unsafe_allow_html=True)
+# ============================================================
+# ปุ่มวิเคราะห์
+# ============================================================
+st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin:8px 0 12px 0'>💡 เลือกไพ่จากสำรับด้านบนแล้วกดวิเคราะห์ได้เลย หรือเลือกจากรายการด้านล่าง</div>", unsafe_allow_html=True)
+
 card_names=[f"{c['emoji']} {c['th']}" for c in TAROT_CARDS]
-selected_names=st.multiselect("เลือกไพ่ยิปซี 3 ใบ",card_names,max_selections=3,placeholder="เลือกไพ่ยิปซี 3 ใบ...",label_visibility="collapsed")
+selected_names=st.multiselect("เลือกไพ่ยิปซี 3 ใบ",card_names,max_selections=3,placeholder="แตะเพื่อเลือกไพ่ยิปซี 3 ใบ...",label_visibility="collapsed")
 selected_cards=[]
 for name in selected_names:
     for card in TAROT_CARDS:
         if f"{card['emoji']} {card['th']}"==name:
-            selected_cards.append(card); break
+            selected_cards.append(card);break
 
 if len(selected_cards)==3:
     roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
@@ -502,10 +555,9 @@ if len(selected_cards)==3:
     for i,card in enumerate(selected_cards):
         with tc[i]:
             st.markdown(f"""<div class="card-revealed"><div style='font-size:1.8em'>{card['emoji']}</div><div style='color:#ce93d8;font-size:0.68em;letter-spacing:1px'>{roles[i]}</div><div style='font-family:Playfair Display,serif;color:#fff;font-weight:700;font-size:0.88em;margin:4px 0'>{card['th']}</div><div style='color:#9e9e9e;font-size:0.7em;line-height:1.3'>{card['meaning']}</div></div>""",unsafe_allow_html=True)
+elif len(selected_cards)>0:
+    st.info(f"เลือกแล้ว {len(selected_cards)}/3 ใบ — เลือกให้ครบก่อนนะครับ")
 
-# ============================================================
-# ปุ่มวิเคราะห์
-# ============================================================
 st.markdown("<br>", unsafe_allow_html=True)
 run=st.button("✦ ANALYZE WITH ASTROTRADE ✦",use_container_width=True)
 
@@ -517,10 +569,10 @@ if run:
         roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
         tarot_cards=[{"role":roles[i],**c} for i,c in enumerate(selected_cards[:3])]
         with st.spinner(f"✨ ดึงข้อมูล {symbol}..."):
-            stock=get_stock_data(symbol,is_crypto)
-        if not stock: st.error(f"❌ ไม่พบ '{symbol}'")
+            stock=get_stock_data(symbol)
+        if not stock: st.error(f"❌ ไม่พบ '{symbol}' — ลองตรวจสอบชื่อ เช่น NVDA, BTC-USD, SCB.BK")
         else:
-            st.markdown(f"<div class='section-header'>{'🪙' if is_crypto else '📊'} {stock['symbol']}</div>",unsafe_allow_html=True)
+            st.markdown(f"<div class='section-header'>{'🪙' if stock['is_crypto'] else '📊'} {stock['symbol']}</div>",unsafe_allow_html=True)
             st.line_chart(stock["close_series"])
             m1,m2,m3=st.columns(3)
             m1.metric("ราคาปัจจุบัน",stock["price"],f"{stock['arrow']}{abs(stock['change_pct'])}%")
