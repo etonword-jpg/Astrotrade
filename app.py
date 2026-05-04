@@ -10,17 +10,11 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="AstroTrade", page_icon="🌟", layout="centered")
 
-# ============================================================
-# API Key
-# ============================================================
 try:
     GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
 except:
     GEMINI_KEY = None
 
-# ============================================================
-# CSS
-# ============================================================
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -73,9 +67,6 @@ with st.sidebar:
     st.divider()
     st.caption("✦ AstroTrade 2025 | ไม่ใช่คำแนะนำทางการเงิน")
 
-# ============================================================
-# รายการหุ้น/Crypto แยกกลุ่ม
-# ============================================================
 STOCK_OPTIONS = {
     "🇺🇸 หุ้นสหรัฐ": {
         "NVIDIA (NVDA)":"NVDA","Apple (AAPL)":"AAPL","Tesla (TSLA)":"TSLA",
@@ -93,8 +84,6 @@ STOCK_OPTIONS = {
         "Shiba Inu (SHIB)":"SHIB-USD","Pepe (PEPE)":"PEPE-USD","Sui (SUI)":"SUI-USD",
     },
 }
-
-# flatten สำหรับ dropdown
 ALL_DISPLAY = {"-- เลือกจากรายการ --": ""}
 for group, items in STOCK_OPTIONS.items():
     for display, ticker in items.items():
@@ -123,9 +112,6 @@ TAROT_CARDS = [
     {"name":"Temperance","th":"ความพอดี","emoji":"🏺","meaning":"สมดุล อย่า FOMO อย่า Panic"},
 ]
 
-# ============================================================
-# ฟังก์ชันหุ้น
-# ============================================================
 def calc_rsi(series, period=14):
     delta=series.diff(); gain=delta.clip(lower=0).rolling(period).mean(); loss=-delta.clip(upper=0).rolling(period).mean()
     return 100-(100/(1+gain/loss))
@@ -164,7 +150,7 @@ def get_elliott(df):
     else: wp,we="ไม่พอข้อมูล","❓"
     return {"trend_long":tl,"trend_short":ts,"wave_pos":wp,"wave_emoji":we}
 
-def get_stock_data(symbol, is_crypto=False):
+def get_stock_data(symbol):
     try:
         df=yf.Ticker(symbol).history(period="3mo")
         if df.empty: return None
@@ -174,7 +160,7 @@ def get_stock_data(symbol, is_crypto=False):
         ma20=df["MA20"].iloc[-1]; ma50=df["MA50"].iloc[-1]; atr=df["ATR"].iloc[-1]
         bbu=df["BB_upper"].iloc[-1]; bbl=df["BB_lower"].iloc[-1]; chg=((price-prev)/prev)*100
         res,sup=get_sr_levels(df); ew=get_elliott(df)
-        is_c=is_crypto or symbol.endswith("-USD")
+        is_c=symbol.endswith("-USD")
         if rsi<=40 and price<=bbl:
             sig,sen,desc,cls="🟢 ซื้อ","BUY","ราคาต่ำเกินจริง — จังหวะสะสมที่ดี","signal-buy"
             e=round(price,2);sl=round(price-atr*1.5,2);tp1=round(price+atr,2);tp2=round(price+atr*2,2);tp3=round(price+atr*3,2);tp4=round(price+atr*4.5,2)
@@ -258,9 +244,7 @@ TP1={stock['tp1']} TP2={stock['tp2']} TP3={stock['tp3']} TP4={stock['tp4']} SL={
     try: return model.generate_content(prompt).text
     except Exception as e: return f"❌ {e}"
 
-# ============================================================
 # Hot Picks
-# ============================================================
 st.markdown("<div class='section-header'>🔥 Hot Picks — อัปเดตรายชั่วโมง</div>", unsafe_allow_html=True)
 poll_cat=st.radio("เลือกกลุ่ม",["หุ้นสหรัฐ","Crypto","หุ้นไทย"],horizontal=True,key="pc")
 with st.spinner("📡 สแกนตลาด..."):
@@ -272,52 +256,33 @@ if hot:
         st.markdown(f"""<div class="poll-card"><div style='display:flex;justify-content:space-between;align-items:center'><div><span style='font-size:1.2em'>{rank}</span> <b style='margin-left:6px'>{s['symbol']}</b> <span style='color:#888;font-size:0.8em'>RSI {s['rsi']}</span></div><div style='text-align:right'><b>{s['price']}</b><br><span style='color:{clr};font-size:0.9em'>{'▲' if s['change_pct']>=0 else '▼'}{abs(s['change_pct'])}%</span></div></div><div class="poll-bar-bg"><div style='width:{bar}%;height:8px;border-radius:20px;background:linear-gradient(90deg,#7c4dff,#e040fb)'></div></div></div>""",unsafe_allow_html=True)
 st.divider()
 
-# ============================================================
-# เลือกหุ้น — 2 ช่องใช้ร่วมกัน
-# ============================================================
+# เลือกหุ้น
 st.markdown("<div class='section-header'>🔮 เลือกสินทรัพย์ที่ต้องการวิเคราะห์</div>", unsafe_allow_html=True)
-
 if "symbol_input" not in st.session_state:
     st.session_state.symbol_input = ""
 
 col_drop, col_type = st.columns(2)
-
 with col_drop:
     st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:4px'>📋 เลือกจากรายการ</div>", unsafe_allow_html=True)
-    dropdown_sel = st.selectbox(
-        "เลือกหุ้น/Crypto",
-        list(ALL_DISPLAY.keys()),
-        label_visibility="collapsed"
-    )
+    dropdown_sel = st.selectbox("เลือกหุ้น/Crypto",list(ALL_DISPLAY.keys()),label_visibility="collapsed")
     if ALL_DISPLAY[dropdown_sel]:
         st.session_state.symbol_input = ALL_DISPLAY[dropdown_sel]
 
 with col_type:
     st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:4px'>✏️ พิมพ์ชื่อเอง</div>", unsafe_allow_html=True)
-    typed = st.text_input(
-        "พิมพ์ชื่อหุ้น",
-        placeholder="เช่น NVDA, BTC-USD, SCB.BK",
-        label_visibility="collapsed",
-        key="typed_symbol"
-    )
+    typed = st.text_input("พิมพ์ชื่อหุ้น",placeholder="เช่น NVDA, BTC-USD, SCB.BK",label_visibility="collapsed",key="typed_symbol")
     if typed.strip():
         st.session_state.symbol_input = typed.strip().upper()
 
-# แสดง badge ชื่อที่เลือก
 symbol = st.session_state.symbol_input
 if symbol:
-    st.markdown(f"""
-    <div style='margin:8px 0 4px 0;color:#888;font-size:0.82em'>สินทรัพย์ที่เลือก:</div>
-    <div class='symbol-badge'>{'🪙' if symbol.endswith('-USD') else '📈'} {symbol}</div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"<div style='margin:8px 0 4px 0;color:#888;font-size:0.82em'>สินทรัพย์ที่เลือก:</div><div class='symbol-badge'>{'🪙' if symbol.endswith('-USD') else '📈'} {symbol}</div>", unsafe_allow_html=True)
 else:
     st.markdown("<div style='color:#555;font-size:0.85em;margin-top:8px'>⬆️ เลือกหรือพิมพ์ชื่อสินทรัพย์ด้านบน</div>", unsafe_allow_html=True)
 
 birth = st.text_input("🎂 วันเกิด (ไม่บังคับ)", placeholder="DD/MM/YYYY เช่น 15/06/1990")
 
-# ============================================================
-# สำรับไพ่ยิปซี Arc + Shuffle Animation
-# ============================================================
+# ไพ่ยิปซี
 st.markdown("<div class='section-header'>🃏 เลือกไพ่ยิปซีจากสำรับ</div>", unsafe_allow_html=True)
 st.markdown("<div style='color:#b39ddb;font-size:0.88em;margin-bottom:8px'>ทำจิตใจให้สงบ แล้วกดไพ่ที่ใจสั่ง 3 ใบ 🌙</div>", unsafe_allow_html=True)
 
@@ -325,48 +290,42 @@ if "shuffled_deck" not in st.session_state:
     deck=TAROT_CARDS.copy(); random.shuffle(deck); st.session_state.shuffled_deck=deck
 if "shuffle_count" not in st.session_state:
     st.session_state.shuffle_count=0
-if "tarot_selected" not in st.session_state:
-    st.session_state.tarot_selected=[]
 
 col_sh,_=st.columns([1,3])
 with col_sh:
     if st.button("🔀 สับไพ่ใหม่"):
         deck=TAROT_CARDS.copy(); random.shuffle(deck)
         st.session_state.shuffled_deck=deck
-        st.session_state.tarot_selected=[]
         st.session_state.shuffle_count+=1
         st.rerun()
 
-cards_json=json.dumps([{"name":c["name"],"th":c["th"],"emoji":c["emoji"],"meaning":c["meaning"]} for c in st.session_state.shuffled_deck])
-shuffle_count=st.session_state.shuffle_count
+cards_json = json.dumps([{"name":c["name"],"th":c["th"],"emoji":c["emoji"],"meaning":c["meaning"]} for c in st.session_state.shuffled_deck])
+shuffle_count = st.session_state.shuffle_count
 
-fan_html=f"""
+# HTML สำรับไพ่ — ใช้ string ธรรมดา ไม่ใช่ f-string เพื่อหลีกเลี่ยง brace conflict
+fan_html = (
+"""
 <style>
-#fan-root{{width:100%;box-sizing:border-box;overflow:hidden;}}
-#fan-svg-wrap{{width:100%;aspect-ratio:2/1;position:relative;overflow:hidden;}}
-#fan-svg-wrap svg{{width:100%;height:100%;}}
-
-@keyframes flyOut{{
-  0%  {{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}}
-  30% {{opacity:0.8;transform:translate(var(--dx),var(--dy)) rotate(var(--dr)) scale(1.2);}}
-  60% {{opacity:0.5;transform:translate(calc(var(--dx)*0.5),calc(var(--dy)*0.5)) rotate(calc(var(--dr)*-0.5)) scale(1.1);}}
-  100%{{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}}
-}}
-.card-g.shuffling{{
-  animation:flyOut 0.7s ease-in-out forwards;
-}}
-
-#sel-area{{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:130px;margin-top:14px;align-items:flex-start;}}
-.sel-card{{background:linear-gradient(145deg,rgba(124,77,255,0.3),rgba(224,64,251,0.15));border:2px solid #e040fb;border-radius:12px;padding:10px 8px;text-align:center;width:90px;box-shadow:0 0 16px rgba(224,64,251,0.4);color:#eee;position:relative;}}
-.sel-card .role{{color:#ce93d8;font-size:0.6em;letter-spacing:1px;text-transform:uppercase;}}
-.sel-card .cemoji{{font-size:1.5em;margin:3px 0;}}
-.sel-card .cname{{font-size:0.7em;font-weight:700;color:#fff;}}
-.sel-card .cmeaning{{font-size:0.6em;color:#999;line-height:1.3;margin-top:3px;}}
-.sel-card .rm{{position:absolute;top:3px;right:6px;background:none;border:none;color:#888;cursor:pointer;font-size:0.75em;}}
-#count-lbl{{text-align:center;color:#e040fb;font-size:0.88em;margin-top:6px;min-height:20px;}}
-#clr-btn{{display:block;margin:8px auto 0;background:rgba(124,77,255,0.2);border:1px solid #7c4dff;color:#e040fb;border-radius:20px;padding:5px 18px;cursor:pointer;font-size:0.82em;}}
+#fan-root{width:100%;box-sizing:border-box;overflow:hidden;}
+#fan-svg-wrap{width:100%;aspect-ratio:2/1;position:relative;overflow:hidden;}
+#fan-svg-wrap svg{width:100%;height:100%;}
+@keyframes flyOut{
+  0%  {opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}
+  30% {opacity:0.8;transform:translate(var(--dx),var(--dy)) rotate(var(--dr)) scale(1.2);}
+  60% {opacity:0.5;transform:translate(calc(var(--dx)*0.5),calc(var(--dy)*0.5)) rotate(calc(var(--dr)*-0.5)) scale(1.1);}
+  100%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}
+}
+.card-g.shuffling{animation:flyOut 0.7s ease-in-out forwards;}
+#sel-area{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:130px;margin-top:14px;align-items:flex-start;}
+.sel-card{background:linear-gradient(145deg,rgba(124,77,255,0.3),rgba(224,64,251,0.15));border:2px solid #e040fb;border-radius:12px;padding:10px 8px;text-align:center;width:90px;box-shadow:0 0 16px rgba(224,64,251,0.4);color:#eee;position:relative;}
+.sel-card .role{color:#ce93d8;font-size:0.6em;letter-spacing:1px;text-transform:uppercase;}
+.sel-card .cemoji{font-size:1.5em;margin:3px 0;}
+.sel-card .cname{font-size:0.7em;font-weight:700;color:#fff;}
+.sel-card .cmeaning{font-size:0.6em;color:#999;line-height:1.3;margin-top:3px;}
+.sel-card .rm{position:absolute;top:3px;right:6px;background:none;border:none;color:#888;cursor:pointer;font-size:0.75em;}
+#count-lbl{text-align:center;color:#e040fb;font-size:0.88em;margin-top:6px;min-height:20px;}
+#clr-btn{display:block;margin:8px auto 0;background:rgba(124,77,255,0.2);border:1px solid #7c4dff;color:#e040fb;border-radius:20px;padding:5px 18px;cursor:pointer;font-size:0.82em;}
 </style>
-
 <div id="fan-root">
   <div id="fan-svg-wrap">
     <svg id="fan-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax meet"></svg>
@@ -375,48 +334,42 @@ fan_html=f"""
   <div id="count-lbl"></div>
   <button id="clr-btn" onclick="clearAll()">✕ ล้างไพ่</button>
 </div>
-
 <script>
-var cards={cards_json};
+var cards="""
++ cards_json +
+""";
 var selected=[];
 var roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"];
-var shuffleCount={shuffle_count};
+var shuffleCount="""
++ str(shuffle_count) +
+""";
 var lastShuffle=parseInt(sessionStorage.getItem('astroShuffle')||'-1');
 var needShuffle=(shuffleCount!==lastShuffle);
 
-function buildFan(){{
+function buildFan(){
   var svg=document.getElementById('fan-svg');
   svg.innerHTML='';
   var total=cards.length;
-  var cx=200,cy=215,R=175;
-  var startDeg=-170,span=160;
-
-  // defs
+  var cx=200,cy=215,R=175,startDeg=-170,span=160;
   var defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
   var rg=document.createElementNS('http://www.w3.org/2000/svg','radialGradient');
   rg.setAttribute('id','bgG');rg.setAttribute('cx','50%');rg.setAttribute('cy','100%');rg.setAttribute('r','60%');
-  [{{'offset':'0%','color':'#3d0070','opacity':'0.5'}},{{'offset':'100%','color':'#080810','opacity':'0'}}].forEach(function(s){{
-    var el=document.createElementNS('http://www.w3.org/2000/svg','stop');
-    el.setAttribute('offset',s.offset);el.setAttribute('stop-color',s.color);el.setAttribute('stop-opacity',s.opacity);
-    rg.appendChild(el);
-  }});
-  defs.appendChild(rg);
-
+  var s1=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s1.setAttribute('offset','0%');s1.setAttribute('stop-color','#3d0070');s1.setAttribute('stop-opacity','0.5');
+  var s2=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s2.setAttribute('offset','100%');s2.setAttribute('stop-color','#080810');s2.setAttribute('stop-opacity','0');
+  rg.appendChild(s1);rg.appendChild(s2);defs.appendChild(rg);
   var lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
   lg.setAttribute('id','cG');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','1');lg.setAttribute('y2','1');
-  [{{'offset':'0%','color':'#2d0a4e'}},{{'offset':'100%','color':'#1a0533'}}].forEach(function(s){{
-    var el=document.createElementNS('http://www.w3.org/2000/svg','stop');
-    el.setAttribute('offset',s.offset);el.setAttribute('stop-color',s.color);lg.appendChild(el);
-  }});
-  defs.appendChild(lg);
+  var ls1=document.createElementNS('http://www.w3.org/2000/svg','stop');ls1.setAttribute('offset','0%');ls1.setAttribute('stop-color','#2d0a4e');
+  var ls2=document.createElementNS('http://www.w3.org/2000/svg','stop');ls2.setAttribute('offset','100%');ls2.setAttribute('stop-color','#1a0533');
+  lg.appendChild(ls1);lg.appendChild(ls2);defs.appendChild(lg);
   svg.appendChild(defs);
-
   var bg=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
   bg.setAttribute('cx','200');bg.setAttribute('cy','210');bg.setAttribute('rx','220');bg.setAttribute('ry','180');bg.setAttribute('fill','url(#bgG)');
   svg.appendChild(bg);
-
   var cw=20,ch=32;
-  for(var i=0;i<total;i++){{
+  for(var i=0;i<total;i++){
     var frac=i/(total-1);
     var angleDeg=startDeg+frac*span;
     var rad=angleDeg*Math.PI/180;
@@ -424,16 +377,12 @@ function buildFan(){{
     var py=cy+R*Math.sin(rad);
     var rot=angleDeg+90;
     var isPicked=selected.indexOf(i)>=0;
-
     var g=document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('class','card-g');
     g.setAttribute('transform','translate('+px+','+py+') rotate('+rot+')');
     g.style.cursor=isPicked?'default':'pointer';
     g.style.opacity=isPicked?'0.2':'1';
-    g.dataset.idx=i;
-    g.dataset.px=px;
-    g.dataset.py=py;
-
+    g.dataset.idx=i;g.dataset.px=px;g.dataset.py=py;
     var rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
     rect.setAttribute('x',-cw/2);rect.setAttribute('y',-ch/2);
     rect.setAttribute('width',cw);rect.setAttribute('height',ch);
@@ -441,106 +390,93 @@ function buildFan(){{
     rect.setAttribute('fill',isPicked?'#0d0020':'url(#cG)');
     rect.setAttribute('stroke',isPicked?'rgba(100,30,150,0.3)':'#e040fb');
     rect.setAttribute('stroke-width','0.8');
-
     var star=document.createElementNS('http://www.w3.org/2000/svg','text');
     star.setAttribute('x','0');star.setAttribute('y','5');
     star.setAttribute('text-anchor','middle');star.setAttribute('font-size','11');
     star.setAttribute('fill',isPicked?'rgba(100,30,150,0.3)':'#e040fb');
     star.textContent='✦';
-
     var title=document.createElementNS('http://www.w3.org/2000/svg','title');
     title.textContent=isPicked?'เลือกแล้ว':cards[i].th;
-
     g.appendChild(title);g.appendChild(rect);g.appendChild(star);
-
-    if(!isPicked){{
-      g.addEventListener('mouseenter',function(){{
+    if(!isPicked){
+      g.addEventListener('mouseenter',function(){
         this.querySelector('rect').setAttribute('stroke','#fff');
         this.querySelector('rect').setAttribute('stroke-width','1.5');
         this.querySelector('text').setAttribute('fill','#fff');
-      }});
-      g.addEventListener('mouseleave',function(){{
+      });
+      g.addEventListener('mouseleave',function(){
         this.querySelector('rect').setAttribute('stroke','#e040fb');
         this.querySelector('rect').setAttribute('stroke-width','0.8');
         this.querySelector('text').setAttribute('fill','#e040fb');
-      }});
+      });
       g.addEventListener('click',onCardClick);
-    }}
+    }
     svg.appendChild(g);
-  }}
-}}
+  }
+}
 
-function onCardClick(){{
+function onCardClick(){
   var idx=parseInt(this.dataset.idx);
   if(selected.indexOf(idx)>=0||selected.length>=3) return;
-  // flash
   var self=this;
   self.style.filter='drop-shadow(0 0 10px #fff)';
-  setTimeout(function(){{self.style.filter='';},350);
+  setTimeout(function(){self.style.filter='';},350);
   selected.push(idx);
   buildFan();renderSelected();
-}}
+}
 
-function renderSelected(){{
+function renderSelected(){
   var area=document.getElementById('sel-area');
   var lbl=document.getElementById('count-lbl');
-  if(selected.length===0){{
+  if(selected.length===0){
     area.innerHTML='<span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span>';
     lbl.textContent='';return;
-  }}
+  }
   area.innerHTML='';
-  for(var i=0;i<selected.length;i++){{
+  for(var i=0;i<selected.length;i++){
     var c=cards[selected[i]];
     var div=document.createElement('div');div.className='sel-card';
     div.innerHTML='<div class="role">'+roles[i]+'</div><div class="cemoji">'+c.emoji+'</div><div class="cname">'+c.th+'</div><div class="cmeaning">'+c.meaning+'</div><button class="rm" onclick="removeCard('+i+')">✕</button>';
     area.appendChild(div);
-  }}
+  }
   lbl.textContent='✨ เลือกแล้ว '+selected.length+'/3 ใบ'+(selected.length===3?' — พร้อมวิเคราะห์! 🚀':'');
-}}
+}
 
-function removeCard(si){{selected.splice(si,1);buildFan();renderSelected();}}
-function clearAll(){{selected=[];buildFan();renderSelected();}}
+function removeCard(si){selected.splice(si,1);buildFan();renderSelected();}
+function clearAll(){selected=[];buildFan();renderSelected();}
 
-// Shuffle animation — ไพ่บินกระจายแล้วกลับมาเรียง
-function doShuffleAnimation(){{
+function doShuffleAnimation(){
   var svg=document.getElementById('fan-svg');
   var groups=svg.querySelectorAll('.card-g');
   var cx=200,cy=200;
-  groups.forEach(function(g,i){{
+  groups.forEach(function(g,i){
     var px=parseFloat(g.dataset.px||200);
     var py=parseFloat(g.dataset.py||200);
-    // ทิศทางบินออกจากจุดศูนย์กลาง
-    var dx=(px-cx)*0.8 + (Math.random()-0.5)*60;
-    var dy=(py-cy)*0.8 + (Math.random()-0.5)*60;
+    var dx=(px-cx)*0.8+(Math.random()-0.5)*60;
+    var dy=(py-cy)*0.8+(Math.random()-0.5)*60;
     var dr=(Math.random()-0.5)*60;
-    g.style.setProperty('--dx', dx+'px');
-    g.style.setProperty('--dy', dy+'px');
-    g.style.setProperty('--dr', dr+'deg');
-    setTimeout(function(){{
+    g.style.setProperty('--dx',dx+'px');
+    g.style.setProperty('--dy',dy+'px');
+    g.style.setProperty('--dr',dr+'deg');
+    setTimeout(function(){
       g.classList.add('shuffling');
-      setTimeout(function(){{g.classList.remove('shuffling');},750);
-    }}, i*25);
-  }});
+      setTimeout(function(){g.classList.remove('shuffling');},750);
+    },i*25);
+  });
   sessionStorage.setItem('astroShuffle',shuffleCount);
 }
 
 buildFan();
 renderSelected();
-
-// ถ้าเพิ่ง shuffle ให้เล่น animation
-if(needShuffle){{
-  setTimeout(doShuffleAnimation, 150);
-}}
+if(needShuffle){ setTimeout(doShuffleAnimation,150); }
 </script>
 """
+)
 
 st.components.v1.html(fan_html, height=530, scrolling=False)
 
-# ============================================================
-# ปุ่มวิเคราะห์
-# ============================================================
-st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin:8px 0 12px 0'>💡 เลือกไพ่จากสำรับด้านบนแล้วกดวิเคราะห์ได้เลย หรือเลือกจากรายการด้านล่าง</div>", unsafe_allow_html=True)
-
+# เลือกไพ่จากรายการ
+st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin:8px 0 6px 0'>💡 หรือเลือกจากรายการด้านล่าง</div>", unsafe_allow_html=True)
 card_names=[f"{c['emoji']} {c['th']}" for c in TAROT_CARDS]
 selected_names=st.multiselect("เลือกไพ่ยิปซี 3 ใบ",card_names,max_selections=3,placeholder="แตะเพื่อเลือกไพ่ยิปซี 3 ใบ...",label_visibility="collapsed")
 selected_cards=[]
@@ -550,11 +486,11 @@ for name in selected_names:
             selected_cards.append(card);break
 
 if len(selected_cards)==3:
-    roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
+    roles_label=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
     tc=st.columns(3)
     for i,card in enumerate(selected_cards):
         with tc[i]:
-            st.markdown(f"""<div class="card-revealed"><div style='font-size:1.8em'>{card['emoji']}</div><div style='color:#ce93d8;font-size:0.68em;letter-spacing:1px'>{roles[i]}</div><div style='font-family:Playfair Display,serif;color:#fff;font-weight:700;font-size:0.88em;margin:4px 0'>{card['th']}</div><div style='color:#9e9e9e;font-size:0.7em;line-height:1.3'>{card['meaning']}</div></div>""",unsafe_allow_html=True)
+            st.markdown(f"""<div class="card-revealed"><div style='font-size:1.8em'>{card['emoji']}</div><div style='color:#ce93d8;font-size:0.68em;letter-spacing:1px'>{roles_label[i]}</div><div style='font-family:Playfair Display,serif;color:#fff;font-weight:700;font-size:0.88em;margin:4px 0'>{card['th']}</div><div style='color:#9e9e9e;font-size:0.7em;line-height:1.3'>{card['meaning']}</div></div>""",unsafe_allow_html=True)
 elif len(selected_cards)>0:
     st.info(f"เลือกแล้ว {len(selected_cards)}/3 ใบ — เลือกให้ครบก่อนนะครับ")
 
@@ -566,11 +502,11 @@ if run:
     elif not symbol: st.warning("⚠️ เลือกหรือพิมพ์ชื่อสินทรัพย์ด้วยครับ")
     elif len(selected_cards)<3: st.warning(f"⚠️ เลือกไพ่ให้ครบ 3 ใบก่อนนะครับ (เลือกแล้ว {len(selected_cards)} ใบ)")
     else:
-        roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
-        tarot_cards=[{"role":roles[i],**c} for i,c in enumerate(selected_cards[:3])]
+        roles_label=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
+        tarot_cards=[{"role":roles_label[i],**c} for i,c in enumerate(selected_cards[:3])]
         with st.spinner(f"✨ ดึงข้อมูล {symbol}..."):
             stock=get_stock_data(symbol)
-        if not stock: st.error(f"❌ ไม่พบ '{symbol}' — ลองตรวจสอบชื่อ เช่น NVDA, BTC-USD, SCB.BK")
+        if not stock: st.error(f"❌ ไม่พบ '{symbol}' — เช่น NVDA, BTC-USD, SCB.BK")
         else:
             st.markdown(f"<div class='section-header'>{'🪙' if stock['is_crypto'] else '📊'} {stock['symbol']}</div>",unsafe_allow_html=True)
             st.line_chart(stock["close_series"])
