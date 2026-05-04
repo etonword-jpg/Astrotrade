@@ -475,16 +475,10 @@ if(needShuffle){ setTimeout(doShuffleAnimation,150); }
 
 st.components.v1.html(fan_html, height=530, scrolling=False)
 
-# เลือกไพ่ — multiselect เป็น source หลัก
-st.markdown("<div style='color:#e040fb;font-size:0.9em;font-weight:600;margin:12px 0 6px 0'>👇 เลือกไพ่ที่ใจสั่ง 3 ใบ</div>", unsafe_allow_html=True)
+# เลือกไพ่จากรายการ
+st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin:8px 0 6px 0'>💡 หรือเลือกจากรายการด้านล่าง</div>", unsafe_allow_html=True)
 card_names=[f"{c['emoji']} {c['th']}" for c in TAROT_CARDS]
-selected_names=st.multiselect(
-    "เลือกไพ่ยิปซี 3 ใบ",
-    card_names,
-    max_selections=3,
-    placeholder="🃏 แตะเพื่อเลือกไพ่ยิปซี 3 ใบ...",
-    label_visibility="collapsed"
-)
+selected_names=st.multiselect("เลือกไพ่ยิปซี 3 ใบ",card_names,max_selections=3,placeholder="แตะเพื่อเลือกไพ่ยิปซี 3 ใบ...",label_visibility="collapsed")
 selected_cards=[]
 for name in selected_names:
     for card in TAROT_CARDS:
@@ -497,7 +491,6 @@ if len(selected_cards)==3:
     for i,card in enumerate(selected_cards):
         with tc[i]:
             st.markdown(f"""<div class="card-revealed"><div style='font-size:1.8em'>{card['emoji']}</div><div style='color:#ce93d8;font-size:0.68em;letter-spacing:1px'>{roles_label[i]}</div><div style='font-family:Playfair Display,serif;color:#fff;font-weight:700;font-size:0.88em;margin:4px 0'>{card['th']}</div><div style='color:#9e9e9e;font-size:0.7em;line-height:1.3'>{card['meaning']}</div></div>""",unsafe_allow_html=True)
-    st.success("✨ เลือกครบ 3 ใบแล้ว — กด ANALYZE ได้เลย! 🚀")
 elif len(selected_cards)>0:
     st.info(f"เลือกแล้ว {len(selected_cards)}/3 ใบ — เลือกให้ครบก่อนนะครับ")
 
