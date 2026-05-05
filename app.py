@@ -5,7 +5,6 @@ import ephem
 import math
 import pandas as pd
 import random
-import json
 from datetime import datetime, timedelta
 
 st.set_page_config(page_title="AstroTrade", page_icon="🌟", layout="centered")
@@ -28,18 +27,28 @@ st.markdown("""
     .signal-buy{background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.4);border-radius:16px;padding:20px;}
     .signal-sell{background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.4);border-radius:16px;padding:20px;}
     .signal-wait{background:rgba(255,160,0,0.08);border:1px solid rgba(255,160,0,0.4);border-radius:16px;padding:20px;}
-    .card-revealed{background:linear-gradient(145deg,rgba(124,77,255,0.25),rgba(224,64,251,0.12));border:2px solid #e040fb;border-radius:12px;padding:14px 8px;text-align:center;box-shadow:0 0 25px rgba(224,64,251,0.5);}
     .section-header{font-family:'Playfair Display',serif;font-size:1.3em;font-weight:700;background:linear-gradient(90deg,#e040fb,#7c4dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px;margin:20px 0 10px 0;}
     .symbol-badge{display:inline-block;background:linear-gradient(135deg,rgba(124,77,255,0.3),rgba(224,64,251,0.2));border:1px solid #e040fb;border-radius:20px;padding:6px 16px;font-size:1.1em;font-weight:700;color:#e8e8f0;margin-top:8px;letter-spacing:1px;}
     [data-testid="metric-container"]{background:rgba(255,255,255,0.04);border:1px solid rgba(124,77,255,0.2);border-radius:12px;padding:12px;}
     .stButton>button{background:linear-gradient(135deg,#7c4dff,#e040fb)!important;color:white!important;border:none!important;border-radius:50px!important;font-weight:700!important;letter-spacing:2px!important;padding:14px!important;box-shadow:0 0 25px rgba(224,64,251,0.4)!important;}
     .stTextInput>div>div>input,.stSelectbox>div>div{background:rgba(255,255,255,0.05)!important;border:1px solid rgba(124,77,255,0.3)!important;border-radius:12px!important;color:#e8e8f0!important;}
-    .stRadio>div{background:rgba(255,255,255,0.03);border-radius:12px;padding:8px;}
     [data-testid="stSidebar"]{background:rgba(8,8,16,0.95)!important;border-right:1px solid rgba(124,77,255,0.2)!important;}
     hr{border-color:rgba(124,77,255,0.2)!important;}
     .poll-card{background:rgba(255,255,255,0.04);border:1px solid rgba(124,77,255,0.25);border-radius:14px;padding:14px 18px;margin:8px 0;}
     .poll-bar-bg{background:rgba(255,255,255,0.08);border-radius:20px;height:8px;margin:4px 0;}
     .footer-text{text-align:center;color:#5c5c7a;font-size:0.78em;letter-spacing:1px;padding:10px 0;}
+    .tarot-back{background:linear-gradient(145deg,#2d0a4e,#1a0533);border:2px solid rgba(224,64,251,0.5);border-radius:12px;padding:14px 4px;text-align:center;cursor:pointer;transition:all 0.2s;}
+    .tarot-selected{background:linear-gradient(145deg,rgba(224,64,251,0.3),rgba(124,77,255,0.2));border:2px solid #e040fb !important;box-shadow:0 0 20px rgba(224,64,251,0.6);}
+    .tarot-picked{opacity:0.25;}
+    .card-revealed{background:linear-gradient(145deg,rgba(124,77,255,0.25),rgba(224,64,251,0.12));border:2px solid #e040fb;border-radius:12px;padding:14px 8px;text-align:center;box-shadow:0 0 25px rgba(224,64,251,0.5);}
+    div[data-testid="stHorizontalBlock"] .stButton>button{
+        padding:6px 4px!important;
+        font-size:0.72em!important;
+        letter-spacing:0px!important;
+        border-radius:10px!important;
+        min-height:80px!important;
+        line-height:1.3!important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -67,28 +76,22 @@ with st.sidebar:
     st.divider()
     st.caption("✦ AstroTrade 2025 | ไม่ใช่คำแนะนำทางการเงิน")
 
+# ============================================================
+# รายการหุ้น
+# ============================================================
 STOCK_OPTIONS = {
-    "🇺🇸 หุ้นสหรัฐ": {
-        "NVIDIA (NVDA)":"NVDA","Apple (AAPL)":"AAPL","Tesla (TSLA)":"TSLA",
-        "Microsoft (MSFT)":"MSFT","Meta (META)":"META","Amazon (AMZN)":"AMZN",
-        "Google (GOOGL)":"GOOGL","AMD":"AMD","Netflix (NFLX)":"NFLX","Palantir (PLTR)":"PLTR",
-    },
-    "🇹🇭 หุ้นไทย": {
-        "CPALL":"CPALL.BK","PTT":"PTT.BK","SCB":"SCB.BK","KBANK":"KBANK.BK",
-        "AOT":"AOT.BK","MINT":"MINT.BK","ADVANC":"ADVANC.BK","TRUE":"TRUE.BK",
-    },
-    "🪙 Crypto": {
-        "Bitcoin (BTC)":"BTC-USD","Ethereum (ETH)":"ETH-USD","Solana (SOL)":"SOL-USD",
-        "XRP":"XRP-USD","BNB":"BNB-USD","Dogecoin (DOGE)":"DOGE-USD",
-        "Cardano (ADA)":"ADA-USD","Avalanche (AVAX)":"AVAX-USD",
-        "Shiba Inu (SHIB)":"SHIB-USD","Pepe (PEPE)":"PEPE-USD","Sui (SUI)":"SUI-USD",
-    },
+    "🇺🇸 หุ้นสหรัฐ": {"NVIDIA":"NVDA","Apple":"AAPL","Tesla":"TSLA","Microsoft":"MSFT","Meta":"META","Amazon":"AMZN","Google":"GOOGL","AMD":"AMD","Netflix":"NFLX","Palantir":"PLTR"},
+    "🇹🇭 หุ้นไทย": {"CPALL":"CPALL.BK","PTT":"PTT.BK","SCB":"SCB.BK","KBANK":"KBANK.BK","AOT":"AOT.BK","MINT":"MINT.BK","ADVANC":"ADVANC.BK","TRUE":"TRUE.BK"},
+    "🪙 Crypto": {"Bitcoin (BTC)":"BTC-USD","Ethereum (ETH)":"ETH-USD","Solana (SOL)":"SOL-USD","XRP":"XRP-USD","BNB":"BNB-USD","Dogecoin (DOGE)":"DOGE-USD","Cardano (ADA)":"ADA-USD","Shiba (SHIB)":"SHIB-USD","Pepe (PEPE)":"PEPE-USD","Sui (SUI)":"SUI-USD"},
 }
 ALL_DISPLAY = {"-- เลือกจากรายการ --": ""}
 for group, items in STOCK_OPTIONS.items():
     for display, ticker in items.items():
         ALL_DISPLAY[f"{group}  •  {display}"] = ticker
 
+# ============================================================
+# ไพ่ Tarot 20 ใบ
+# ============================================================
 TAROT_CARDS = [
     {"name":"The Fool","th":"คนโง่เขลา","emoji":"🃏","meaning":"จุดเริ่มต้นใหม่ โอกาสที่ไม่คาดคิด"},
     {"name":"The Magician","th":"นักมายากล","emoji":"🎩","meaning":"มีทักษะและพลัง พร้อมลงมือทำ"},
@@ -112,6 +115,9 @@ TAROT_CARDS = [
     {"name":"Temperance","th":"ความพอดี","emoji":"🏺","meaning":"สมดุล อย่า FOMO อย่า Panic"},
 ]
 
+# ============================================================
+# ฟังก์ชันหุ้น
+# ============================================================
 def calc_rsi(series, period=14):
     delta=series.diff(); gain=delta.clip(lower=0).rolling(period).mean(); loss=-delta.clip(upper=0).rolling(period).mean()
     return 100-(100/(1+gain/loss))
@@ -244,7 +250,9 @@ TP1={stock['tp1']} TP2={stock['tp2']} TP3={stock['tp3']} TP4={stock['tp4']} SL={
     try: return model.generate_content(prompt).text
     except Exception as e: return f"❌ {e}"
 
+# ============================================================
 # Hot Picks
+# ============================================================
 st.markdown("<div class='section-header'>🔥 Hot Picks — อัปเดตรายชั่วโมง</div>", unsafe_allow_html=True)
 poll_cat=st.radio("เลือกกลุ่ม",["หุ้นสหรัฐ","Crypto","หุ้นไทย"],horizontal=True,key="pc")
 with st.spinner("📡 สแกนตลาด..."):
@@ -256,7 +264,9 @@ if hot:
         st.markdown(f"""<div class="poll-card"><div style='display:flex;justify-content:space-between;align-items:center'><div><span style='font-size:1.2em'>{rank}</span> <b style='margin-left:6px'>{s['symbol']}</b> <span style='color:#888;font-size:0.8em'>RSI {s['rsi']}</span></div><div style='text-align:right'><b>{s['price']}</b><br><span style='color:{clr};font-size:0.9em'>{'▲' if s['change_pct']>=0 else '▼'}{abs(s['change_pct'])}%</span></div></div><div class="poll-bar-bg"><div style='width:{bar}%;height:8px;border-radius:20px;background:linear-gradient(90deg,#7c4dff,#e040fb)'></div></div></div>""",unsafe_allow_html=True)
 st.divider()
 
+# ============================================================
 # เลือกหุ้น
+# ============================================================
 st.markdown("<div class='section-header'>🔮 เลือกสินทรัพย์ที่ต้องการวิเคราะห์</div>", unsafe_allow_html=True)
 if "symbol_input" not in st.session_state:
     st.session_state.symbol_input = ""
@@ -264,249 +274,129 @@ if "symbol_input" not in st.session_state:
 col_drop, col_type = st.columns(2)
 with col_drop:
     st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:4px'>📋 เลือกจากรายการ</div>", unsafe_allow_html=True)
-    dropdown_sel = st.selectbox("เลือกหุ้น/Crypto",list(ALL_DISPLAY.keys()),label_visibility="collapsed")
+    dropdown_sel = st.selectbox("เลือกหุ้น",list(ALL_DISPLAY.keys()),label_visibility="collapsed")
     if ALL_DISPLAY[dropdown_sel]:
         st.session_state.symbol_input = ALL_DISPLAY[dropdown_sel]
 
 with col_type:
     st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin-bottom:4px'>✏️ พิมพ์ชื่อเอง</div>", unsafe_allow_html=True)
-    typed = st.text_input("พิมพ์ชื่อหุ้น",placeholder="เช่น NVDA, BTC-USD, SCB.BK",label_visibility="collapsed",key="typed_symbol")
+    typed = st.text_input("พิมพ์ชื่อ",placeholder="เช่น NVDA, BTC-USD",label_visibility="collapsed",key="typed_symbol")
     if typed.strip():
         st.session_state.symbol_input = typed.strip().upper()
 
 symbol = st.session_state.symbol_input
 if symbol:
-    st.markdown(f"<div style='margin:8px 0 4px 0;color:#888;font-size:0.82em'>สินทรัพย์ที่เลือก:</div><div class='symbol-badge'>{'🪙' if symbol.endswith('-USD') else '📈'} {symbol}</div>", unsafe_allow_html=True)
-else:
-    st.markdown("<div style='color:#555;font-size:0.85em;margin-top:8px'>⬆️ เลือกหรือพิมพ์ชื่อสินทรัพย์ด้านบน</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='margin:6px 0 2px 0;color:#888;font-size:0.82em'>สินทรัพย์ที่เลือก:</div><div class='symbol-badge'>{'🪙' if symbol.endswith('-USD') else '📈'} {symbol}</div>", unsafe_allow_html=True)
 
 birth = st.text_input("🎂 วันเกิด (ไม่บังคับ)", placeholder="DD/MM/YYYY เช่น 15/06/1990")
 
-# ไพ่ยิปซี
+# ============================================================
+# ไพ่ยิปซี — ปุ่ม Streamlit จริงๆ กด session_state
+# ============================================================
 st.markdown("<div class='section-header'>🃏 เลือกไพ่ยิปซีจากสำรับ</div>", unsafe_allow_html=True)
-st.markdown("<div style='color:#b39ddb;font-size:0.88em;margin-bottom:8px'>ทำจิตใจให้สงบ แล้วกดไพ่ที่ใจสั่ง 3 ใบ 🌙</div>", unsafe_allow_html=True)
+st.markdown("<div style='color:#b39ddb;font-size:0.88em;margin-bottom:10px'>ทำจิตใจให้สงบ แล้วกดไพ่ที่ใจสั่ง 3 ใบ 🌙</div>", unsafe_allow_html=True)
 
-if "shuffled_deck" not in st.session_state:
-    deck=TAROT_CARDS.copy(); random.shuffle(deck); st.session_state.shuffled_deck=deck
-if "shuffle_count" not in st.session_state:
-    st.session_state.shuffle_count=0
+# session state
+if "deck" not in st.session_state:
+    deck = TAROT_CARDS.copy(); random.shuffle(deck); st.session_state.deck = deck
+if "picked" not in st.session_state:
+    st.session_state.picked = []  # list of indices in deck
 
-col_sh,_=st.columns([1,3])
-with col_sh:
+c1, c2 = st.columns([1, 3])
+with c1:
     if st.button("🔀 สับไพ่ใหม่"):
-        deck=TAROT_CARDS.copy(); random.shuffle(deck)
-        st.session_state.shuffled_deck=deck
-        st.session_state.shuffle_count+=1
+        deck = TAROT_CARDS.copy(); random.shuffle(deck)
+        st.session_state.deck = deck
+        st.session_state.picked = []
         st.rerun()
 
-cards_json = json.dumps([{"name":c["name"],"th":c["th"],"emoji":c["emoji"],"meaning":c["meaning"]} for c in st.session_state.shuffled_deck])
-shuffle_count = st.session_state.shuffle_count
+picked = st.session_state.picked
+deck = st.session_state.deck
 
-# HTML สำรับไพ่ — ใช้ string ธรรมดา ไม่ใช่ f-string เพื่อหลีกเลี่ยง brace conflict
-fan_html = (
-"""
-<style>
-#fan-root{width:100%;box-sizing:border-box;overflow:hidden;}
-#fan-svg-wrap{width:100%;aspect-ratio:2/1;position:relative;overflow:hidden;}
-#fan-svg-wrap svg{width:100%;height:100%;}
-@keyframes flyOut{
-  0%  {opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}
-  30% {opacity:0.8;transform:translate(var(--dx),var(--dy)) rotate(var(--dr)) scale(1.2);}
-  60% {opacity:0.5;transform:translate(calc(var(--dx)*0.5),calc(var(--dy)*0.5)) rotate(calc(var(--dr)*-0.5)) scale(1.1);}
-  100%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}
-}
-.card-g.shuffling{animation:flyOut 0.7s ease-in-out forwards;}
-#sel-area{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:130px;margin-top:14px;align-items:flex-start;}
-.sel-card{background:linear-gradient(145deg,rgba(124,77,255,0.3),rgba(224,64,251,0.15));border:2px solid #e040fb;border-radius:12px;padding:10px 8px;text-align:center;width:90px;box-shadow:0 0 16px rgba(224,64,251,0.4);color:#eee;position:relative;}
-.sel-card .role{color:#ce93d8;font-size:0.6em;letter-spacing:1px;text-transform:uppercase;}
-.sel-card .cemoji{font-size:1.5em;margin:3px 0;}
-.sel-card .cname{font-size:0.7em;font-weight:700;color:#fff;}
-.sel-card .cmeaning{font-size:0.6em;color:#999;line-height:1.3;margin-top:3px;}
-.sel-card .rm{position:absolute;top:3px;right:6px;background:none;border:none;color:#888;cursor:pointer;font-size:0.75em;}
-#count-lbl{text-align:center;color:#e040fb;font-size:0.88em;margin-top:6px;min-height:20px;}
-#clr-btn{display:block;margin:8px auto 0;background:rgba(124,77,255,0.2);border:1px solid #7c4dff;color:#e040fb;border-radius:20px;padding:5px 18px;cursor:pointer;font-size:0.82em;}
-</style>
-<div id="fan-root">
-  <div id="fan-svg-wrap">
-    <svg id="fan-svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax meet"></svg>
-  </div>
-  <div id="sel-area"><span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span></div>
-  <div id="count-lbl"></div>
-  <button id="clr-btn" onclick="clearAll()">✕ ล้างไพ่</button>
-</div>
-<script>
-var cards="""
-+ cards_json +
-""";
-var selected=[];
-var roles=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"];
-var shuffleCount="""
-+ str(shuffle_count) +
-""";
-var lastShuffle=parseInt(sessionStorage.getItem('astroShuffle')||'-1');
-var needShuffle=(shuffleCount!==lastShuffle);
+# แสดงไพ่เป็น grid 5 คอลัมน์
+st.markdown("<div style='color:#9e9e9e;font-size:0.8em;margin-bottom:6px'>กดไพ่ที่ต้องการ — ไพ่ที่เลือกแล้วจะจางลง</div>", unsafe_allow_html=True)
 
-function buildFan(){
-  var svg=document.getElementById('fan-svg');
-  svg.innerHTML='';
-  var total=cards.length;
-  var cx=200,cy=215,R=175,startDeg=-170,span=160;
-  var defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
-  var rg=document.createElementNS('http://www.w3.org/2000/svg','radialGradient');
-  rg.setAttribute('id','bgG');rg.setAttribute('cx','50%');rg.setAttribute('cy','100%');rg.setAttribute('r','60%');
-  var s1=document.createElementNS('http://www.w3.org/2000/svg','stop');
-  s1.setAttribute('offset','0%');s1.setAttribute('stop-color','#3d0070');s1.setAttribute('stop-opacity','0.5');
-  var s2=document.createElementNS('http://www.w3.org/2000/svg','stop');
-  s2.setAttribute('offset','100%');s2.setAttribute('stop-color','#080810');s2.setAttribute('stop-opacity','0');
-  rg.appendChild(s1);rg.appendChild(s2);defs.appendChild(rg);
-  var lg=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
-  lg.setAttribute('id','cG');lg.setAttribute('x1','0');lg.setAttribute('y1','0');lg.setAttribute('x2','1');lg.setAttribute('y2','1');
-  var ls1=document.createElementNS('http://www.w3.org/2000/svg','stop');ls1.setAttribute('offset','0%');ls1.setAttribute('stop-color','#2d0a4e');
-  var ls2=document.createElementNS('http://www.w3.org/2000/svg','stop');ls2.setAttribute('offset','100%');ls2.setAttribute('stop-color','#1a0533');
-  lg.appendChild(ls1);lg.appendChild(ls2);defs.appendChild(lg);
-  svg.appendChild(defs);
-  var bg=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-  bg.setAttribute('cx','200');bg.setAttribute('cy','210');bg.setAttribute('rx','220');bg.setAttribute('ry','180');bg.setAttribute('fill','url(#bgG)');
-  svg.appendChild(bg);
-  var cw=20,ch=32;
-  for(var i=0;i<total;i++){
-    var frac=i/(total-1);
-    var angleDeg=startDeg+frac*span;
-    var rad=angleDeg*Math.PI/180;
-    var px=cx+R*Math.cos(rad);
-    var py=cy+R*Math.sin(rad);
-    var rot=angleDeg+90;
-    var isPicked=selected.indexOf(i)>=0;
-    var g=document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','card-g');
-    g.setAttribute('transform','translate('+px+','+py+') rotate('+rot+')');
-    g.style.cursor=isPicked?'default':'pointer';
-    g.style.opacity=isPicked?'0.2':'1';
-    g.dataset.idx=i;g.dataset.px=px;g.dataset.py=py;
-    var rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x',-cw/2);rect.setAttribute('y',-ch/2);
-    rect.setAttribute('width',cw);rect.setAttribute('height',ch);
-    rect.setAttribute('rx','3');rect.setAttribute('ry','3');
-    rect.setAttribute('fill',isPicked?'#0d0020':'url(#cG)');
-    rect.setAttribute('stroke',isPicked?'rgba(100,30,150,0.3)':'#e040fb');
-    rect.setAttribute('stroke-width','0.8');
-    var star=document.createElementNS('http://www.w3.org/2000/svg','text');
-    star.setAttribute('x','0');star.setAttribute('y','5');
-    star.setAttribute('text-anchor','middle');star.setAttribute('font-size','11');
-    star.setAttribute('fill',isPicked?'rgba(100,30,150,0.3)':'#e040fb');
-    star.textContent='✦';
-    var title=document.createElementNS('http://www.w3.org/2000/svg','title');
-    title.textContent=isPicked?'เลือกแล้ว':cards[i].th;
-    g.appendChild(title);g.appendChild(rect);g.appendChild(star);
-    if(!isPicked){
-      g.addEventListener('mouseenter',function(){
-        this.querySelector('rect').setAttribute('stroke','#fff');
-        this.querySelector('rect').setAttribute('stroke-width','1.5');
-        this.querySelector('text').setAttribute('fill','#fff');
-      });
-      g.addEventListener('mouseleave',function(){
-        this.querySelector('rect').setAttribute('stroke','#e040fb');
-        this.querySelector('rect').setAttribute('stroke-width','0.8');
-        this.querySelector('text').setAttribute('fill','#e040fb');
-      });
-      g.addEventListener('click',onCardClick);
-    }
-    svg.appendChild(g);
-  }
-}
+cols_per_row = 5
+for row_start in range(0, len(deck), cols_per_row):
+    row_cards = deck[row_start:row_start+cols_per_row]
+    cols = st.columns(cols_per_row)
+    for col_i, card in enumerate(row_cards):
+        card_idx = row_start + col_i
+        is_picked = card_idx in picked
+        with cols[col_i]:
+            if is_picked:
+                order = picked.index(card_idx) + 1
+                st.markdown(f"""
+                <div style='background:rgba(224,64,251,0.15);border:2px solid #e040fb;
+                    border-radius:10px;padding:8px 4px;text-align:center;opacity:0.5;'>
+                    <div style='font-size:1.2em'>{card['emoji']}</div>
+                    <div style='color:#e040fb;font-size:0.6em;font-weight:700'>ใบที่ {order}</div>
+                    <div style='color:#fff;font-size:0.6em'>{card['th']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("✕", key=f"rm_{card_idx}", use_container_width=True):
+                    st.session_state.picked.remove(card_idx)
+                    st.rerun()
+            else:
+                can_pick = len(picked) < 3
+                st.markdown(f"""
+                <div style='background:linear-gradient(145deg,#2d0a4e,#1a0533);
+                    border:2px solid rgba(224,64,251,{"0.6" if can_pick else "0.2"});
+                    border-radius:10px;padding:8px 4px;text-align:center;
+                    opacity:{"1" if can_pick else "0.4"};'>
+                    <div style='font-size:1.4em'>🌟</div>
+                    <div style='color:#9c27b0;font-size:0.55em;letter-spacing:0.5px'>TAROT</div>
+                </div>
+                """, unsafe_allow_html=True)
+                if can_pick:
+                    if st.button("เปิด", key=f"pick_{card_idx}", use_container_width=True):
+                        st.session_state.picked.append(card_idx)
+                        st.rerun()
 
-function onCardClick(){
-  var idx=parseInt(this.dataset.idx);
-  if(selected.indexOf(idx)>=0||selected.length>=3) return;
-  var self=this;
-  self.style.filter='drop-shadow(0 0 10px #fff)';
-  setTimeout(function(){self.style.filter='';},350);
-  selected.push(idx);
-  buildFan();renderSelected();
-}
-
-function renderSelected(){
-  var area=document.getElementById('sel-area');
-  var lbl=document.getElementById('count-lbl');
-  if(selected.length===0){
-    area.innerHTML='<span style="color:#555;font-size:0.85em;align-self:center">กดไพ่จากสำรับด้านบน</span>';
-    lbl.textContent='';return;
-  }
-  area.innerHTML='';
-  for(var i=0;i<selected.length;i++){
-    var c=cards[selected[i]];
-    var div=document.createElement('div');div.className='sel-card';
-    div.innerHTML='<div class="role">'+roles[i]+'</div><div class="cemoji">'+c.emoji+'</div><div class="cname">'+c.th+'</div><div class="cmeaning">'+c.meaning+'</div><button class="rm" onclick="removeCard('+i+')">✕</button>';
-    area.appendChild(div);
-  }
-  lbl.textContent='✨ เลือกแล้ว '+selected.length+'/3 ใบ'+(selected.length===3?' — พร้อมวิเคราะห์! 🚀':'');
-}
-
-function removeCard(si){selected.splice(si,1);buildFan();renderSelected();}
-function clearAll(){selected=[];buildFan();renderSelected();}
-
-function doShuffleAnimation(){
-  var svg=document.getElementById('fan-svg');
-  var groups=svg.querySelectorAll('.card-g');
-  var cx=200,cy=200;
-  groups.forEach(function(g,i){
-    var px=parseFloat(g.dataset.px||200);
-    var py=parseFloat(g.dataset.py||200);
-    var dx=(px-cx)*0.8+(Math.random()-0.5)*60;
-    var dy=(py-cy)*0.8+(Math.random()-0.5)*60;
-    var dr=(Math.random()-0.5)*60;
-    g.style.setProperty('--dx',dx+'px');
-    g.style.setProperty('--dy',dy+'px');
-    g.style.setProperty('--dr',dr+'deg');
-    setTimeout(function(){
-      g.classList.add('shuffling');
-      setTimeout(function(){g.classList.remove('shuffling');},750);
-    },i*25);
-  });
-  sessionStorage.setItem('astroShuffle',shuffleCount);
-}
-
-buildFan();
-renderSelected();
-if(needShuffle){ setTimeout(doShuffleAnimation,150); }
-</script>
-"""
-)
-
-st.components.v1.html(fan_html, height=530, scrolling=False)
-
-# เลือกไพ่จากรายการ
-st.markdown("<div style='color:#b39ddb;font-size:0.82em;margin:8px 0 6px 0'>💡 หรือเลือกจากรายการด้านล่าง</div>", unsafe_allow_html=True)
-card_names=[f"{c['emoji']} {c['th']}" for c in TAROT_CARDS]
-selected_names=st.multiselect("เลือกไพ่ยิปซี 3 ใบ",card_names,max_selections=3,placeholder="แตะเพื่อเลือกไพ่ยิปซี 3 ใบ...",label_visibility="collapsed")
-selected_cards=[]
-for name in selected_names:
-    for card in TAROT_CARDS:
-        if f"{card['emoji']} {card['th']}"==name:
-            selected_cards.append(card);break
-
-if len(selected_cards)==3:
-    roles_label=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
-    tc=st.columns(3)
-    for i,card in enumerate(selected_cards):
-        with tc[i]:
-            st.markdown(f"""<div class="card-revealed"><div style='font-size:1.8em'>{card['emoji']}</div><div style='color:#ce93d8;font-size:0.68em;letter-spacing:1px'>{roles_label[i]}</div><div style='font-family:Playfair Display,serif;color:#fff;font-weight:700;font-size:0.88em;margin:4px 0'>{card['th']}</div><div style='color:#9e9e9e;font-size:0.7em;line-height:1.3'>{card['meaning']}</div></div>""",unsafe_allow_html=True)
-elif len(selected_cards)>0:
-    st.info(f"เลือกแล้ว {len(selected_cards)}/3 ใบ — เลือกให้ครบก่อนนะครับ")
+# แสดงไพ่ที่เลือกครบ
+selected_cards = [deck[i] for i in picked]
 
 st.markdown("<br>", unsafe_allow_html=True)
-run=st.button("✦ ANALYZE WITH ASTROTRADE ✦",use_container_width=True)
+if len(selected_cards) > 0:
+    roles_label = ["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
+    st.markdown(f"<div style='color:#e040fb;font-size:0.9em;margin-bottom:8px'>✨ เลือกแล้ว {len(selected_cards)}/3 ใบ {'— พร้อมวิเคราะห์! 🚀' if len(selected_cards)==3 else ''}</div>", unsafe_allow_html=True)
+    if len(selected_cards) >= 1:
+        tc = st.columns(3)
+        for i in range(3):
+            with tc[i]:
+                if i < len(selected_cards):
+                    card = selected_cards[i]
+                    st.markdown(f"""
+                    <div class="card-revealed">
+                        <div style='font-size:1.8em'>{card['emoji']}</div>
+                        <div style='color:#ce93d8;font-size:0.68em;letter-spacing:1px'>{roles_label[i]}</div>
+                        <div style='font-family:Playfair Display,serif;color:#fff;font-weight:700;font-size:0.88em;margin:4px 0'>{card['th']}</div>
+                        <div style='color:#9e9e9e;font-size:0.7em;line-height:1.3'>{card['meaning']}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("<div style='background:rgba(255,255,255,0.03);border:1px dashed rgba(224,64,251,0.3);border-radius:12px;padding:20px;text-align:center;color:#555;font-size:0.8em'>รอไพ่ใบที่ {}</div>".format(i+1), unsafe_allow_html=True)
+
+# ============================================================
+# ปุ่มวิเคราะห์
+# ============================================================
+st.markdown("<br>", unsafe_allow_html=True)
+run = st.button("✦ ANALYZE WITH ASTROTRADE ✦", use_container_width=True)
 
 if run:
-    if not GEMINI_KEY: st.warning("⚠️ ใส่ Gemini API Key ที่ sidebar ก่อนนะครับ")
-    elif not symbol: st.warning("⚠️ เลือกหรือพิมพ์ชื่อสินทรัพย์ด้วยครับ")
-    elif len(selected_cards)<3: st.warning(f"⚠️ เลือกไพ่ให้ครบ 3 ใบก่อนนะครับ (เลือกแล้ว {len(selected_cards)} ใบ)")
+    if not GEMINI_KEY:
+        st.warning("⚠️ ใส่ Gemini API Key ที่ sidebar ก่อนนะครับ")
+    elif not symbol:
+        st.warning("⚠️ เลือกหรือพิมพ์ชื่อสินทรัพย์ด้วยครับ")
+    elif len(selected_cards) < 3:
+        st.warning(f"⚠️ กดเปิดไพ่ให้ครบ 3 ใบก่อนนะครับ (เปิดแล้ว {len(selected_cards)} ใบ)")
     else:
-        roles_label=["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
-        tarot_cards=[{"role":roles_label[i],**c} for i,c in enumerate(selected_cards[:3])]
+        roles_label = ["สถานการณ์ปัจจุบัน","แนวโน้มระยะสั้น","คำแนะนำ"]
+        tarot_cards = [{"role":roles_label[i],**c} for i,c in enumerate(selected_cards[:3])]
         with st.spinner(f"✨ ดึงข้อมูล {symbol}..."):
-            stock=get_stock_data(symbol)
-        if not stock: st.error(f"❌ ไม่พบ '{symbol}' — เช่น NVDA, BTC-USD, SCB.BK")
+            stock = get_stock_data(symbol)
+        if not stock:
+            st.error(f"❌ ไม่พบ '{symbol}' — เช่น NVDA, BTC-USD, SCB.BK")
         else:
             st.markdown(f"<div class='section-header'>{'🪙' if stock['is_crypto'] else '📊'} {stock['symbol']}</div>",unsafe_allow_html=True)
             st.line_chart(stock["close_series"])
